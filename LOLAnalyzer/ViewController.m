@@ -177,7 +177,7 @@
     self.memberB3.HeroForButton = [self.teamcacheB objectForKey:@"rightMid"];
     self.memberB4.HeroForButton = [self.teamcacheB objectForKey:@"rightAd"];
     self.memberB5.HeroForButton = [self.teamcacheB objectForKey:@"rightSup"];
-    
+//    
     for (HeroButton*button in self.allTeam) {
         [self.view addSubview:button];
         
@@ -763,11 +763,11 @@
     [UIVisualEffectView animateWithDuration:1.0 animations:^{
         self.coverView.transform = CGAffineTransformMakeTranslation(0, -screenHeight);
     }];
-    for (HeroButton* button in self.allTeam) {
-        [button removeFromSuperview];
-        //        button.HeroForButton  = nil;
-        
-    }
+//    for (HeroButton* button in self.allTeam) {
+//        [button removeFromSuperview];
+//        //        button.HeroForButton  = nil;
+//        
+//    }
 }
 -(void)addCountB{
     if ([self.teamRight[0] HeroForButton]) {

@@ -60,10 +60,10 @@
 
 -(void)clearView{
     [UIVisualEffectView animateWithDuration:1.0 animations:^{
-        self.transform = CGAffineTransformMakeTranslation(0, -screenHeight);
+        self.transform = CGAffineTransformMakeTranslation(0, screenHeight);
     }];
-    [self removeFromSuperview];
-    [self.delegate addAllTeam];
+//    [self removeFromSuperview];
+   // [self.delegate addAllTeam];
 }
 
 -(UIButton *)clearButton{
