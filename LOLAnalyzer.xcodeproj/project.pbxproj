@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		280CD48A1B7A1B35008EF14D /* SideButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 280CD4891B7A1B35008EF14D /* SideButton.m */; };
+		281F88801B758EED003846CF /* ConlusionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 281F887F1B758EED003846CF /* ConlusionView.m */; };
+		281F88821B759A43003846CF /* heros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 281F88811B759A43003846CF /* heros.plist */; };
+		281F88871B783509003846CF /* PositionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 281F88861B783509003846CF /* PositionView.m */; };
 		28D1F5A71B6DE82600B2B423 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5A61B6DE82600B2B423 /* main.m */; };
 		28D1F5AA1B6DE82600B2B423 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5A91B6DE82600B2B423 /* AppDelegate.m */; };
 		28D1F5AD1B6DE82600B2B423 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5AC1B6DE82600B2B423 /* ViewController.m */; };
@@ -14,6 +18,15 @@
 		28D1F5B21B6DE82600B2B423 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F5B11B6DE82600B2B423 /* Images.xcassets */; };
 		28D1F5B51B6DE82600B2B423 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F5B31B6DE82600B2B423 /* LaunchScreen.xib */; };
 		28D1F5C11B6DE82600B2B423 /* LOLAnalyzerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5C01B6DE82600B2B423 /* LOLAnalyzerTests.m */; };
+		28D1F5CB1B6DE9BE00B2B423 /* temp.plist in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F5CA1B6DE9BE00B2B423 /* temp.plist */; };
+		28D1F5CE1B6DE9DD00B2B423 /* HeroModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5CD1B6DE9DD00B2B423 /* HeroModel.m */; };
+		28D1F5D61B6E0E4A00B2B423 /* HeroPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5D51B6E0E4A00B2B423 /* HeroPickerView.m */; };
+		28D1F5D81B6E116400B2B423 /* HeroPickerXib.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F5D71B6E116400B2B423 /* HeroPickerXib.xib */; };
+		28D1F6111B6E3E6100B2B423 /* placeholder.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F6101B6E3E6100B2B423 /* placeholder.jpg */; };
+		28E9BA401B6F7F970029CB16 /* HeroButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 28E9BA3F1B6F7F970029CB16 /* HeroButton.m */; };
+		28F28DB51B70A5E700431179 /* Searcher.plist in Resources */ = {isa = PBXBuildFile; fileRef = 28F28DB41B70A5E700431179 /* Searcher.plist */; };
+		28F28DBC1B74CDFE00431179 /* ConclusionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28F28DBA1B74CDFE00431179 /* ConclusionViewController.m */; };
+		28F28DBD1B74CDFE00431179 /* ConclusionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28F28DBB1B74CDFE00431179 /* ConclusionViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +40,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		280CD4881B7A1B35008EF14D /* SideButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SideButton.h; sourceTree = "<group>"; };
+		280CD4891B7A1B35008EF14D /* SideButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SideButton.m; sourceTree = "<group>"; };
+		281F887E1B758EED003846CF /* ConlusionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConlusionView.h; sourceTree = "<group>"; };
+		281F887F1B758EED003846CF /* ConlusionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConlusionView.m; sourceTree = "<group>"; };
+		281F88811B759A43003846CF /* heros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = heros.plist; sourceTree = "<group>"; };
+		281F88851B783509003846CF /* PositionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PositionView.h; sourceTree = "<group>"; };
+		281F88861B783509003846CF /* PositionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionView.m; sourceTree = "<group>"; };
 		28D1F5A11B6DE82600B2B423 /* LOLAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LOLAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		28D1F5A51B6DE82600B2B423 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		28D1F5A61B6DE82600B2B423 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -40,6 +60,20 @@
 		28D1F5BA1B6DE82600B2B423 /* LOLAnalyzerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LOLAnalyzerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		28D1F5BF1B6DE82600B2B423 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		28D1F5C01B6DE82600B2B423 /* LOLAnalyzerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LOLAnalyzerTests.m; sourceTree = "<group>"; };
+		28D1F5CA1B6DE9BE00B2B423 /* temp.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = temp.plist; sourceTree = "<group>"; };
+		28D1F5CC1B6DE9DD00B2B423 /* HeroModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeroModel.h; sourceTree = "<group>"; };
+		28D1F5CD1B6DE9DD00B2B423 /* HeroModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeroModel.m; sourceTree = "<group>"; };
+		28D1F5D41B6E0E4A00B2B423 /* HeroPickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeroPickerView.h; sourceTree = "<group>"; };
+		28D1F5D51B6E0E4A00B2B423 /* HeroPickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeroPickerView.m; sourceTree = "<group>"; };
+		28D1F5D71B6E116400B2B423 /* HeroPickerXib.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HeroPickerXib.xib; sourceTree = "<group>"; };
+		28D1F6101B6E3E6100B2B423 /* placeholder.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = placeholder.jpg; sourceTree = "<group>"; };
+		28D1F6121B6F66D300B2B423 /* UIButton_UIButton_HeroModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton_UIButton_HeroModel.h; sourceTree = "<group>"; };
+		28E9BA3E1B6F7F970029CB16 /* HeroButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeroButton.h; sourceTree = "<group>"; };
+		28E9BA3F1B6F7F970029CB16 /* HeroButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeroButton.m; sourceTree = "<group>"; };
+		28F28DB41B70A5E700431179 /* Searcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Searcher.plist; sourceTree = "<group>"; };
+		28F28DB91B74CDFE00431179 /* ConclusionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConclusionViewController.h; sourceTree = "<group>"; };
+		28F28DBA1B74CDFE00431179 /* ConclusionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConclusionViewController.m; sourceTree = "<group>"; };
+		28F28DBB1B74CDFE00431179 /* ConclusionViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConclusionViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,7 +119,28 @@
 				28D1F5A91B6DE82600B2B423 /* AppDelegate.m */,
 				28D1F5AB1B6DE82600B2B423 /* ViewController.h */,
 				28D1F5AC1B6DE82600B2B423 /* ViewController.m */,
+				28F28DB91B74CDFE00431179 /* ConclusionViewController.h */,
+				28F28DBA1B74CDFE00431179 /* ConclusionViewController.m */,
+				281F887E1B758EED003846CF /* ConlusionView.h */,
+				281F887F1B758EED003846CF /* ConlusionView.m */,
+				28F28DBB1B74CDFE00431179 /* ConclusionViewController.xib */,
+				28D1F6121B6F66D300B2B423 /* UIButton_UIButton_HeroModel.h */,
+				28E9BA3E1B6F7F970029CB16 /* HeroButton.h */,
+				28E9BA3F1B6F7F970029CB16 /* HeroButton.m */,
+				280CD4881B7A1B35008EF14D /* SideButton.h */,
+				280CD4891B7A1B35008EF14D /* SideButton.m */,
+				281F88851B783509003846CF /* PositionView.h */,
+				281F88861B783509003846CF /* PositionView.m */,
+				28D1F5D41B6E0E4A00B2B423 /* HeroPickerView.h */,
+				28D1F5D51B6E0E4A00B2B423 /* HeroPickerView.m */,
+				28D1F5D71B6E116400B2B423 /* HeroPickerXib.xib */,
 				28D1F5AE1B6DE82600B2B423 /* Main.storyboard */,
+				28D1F6101B6E3E6100B2B423 /* placeholder.jpg */,
+				28D1F5CA1B6DE9BE00B2B423 /* temp.plist */,
+				28F28DB41B70A5E700431179 /* Searcher.plist */,
+				281F88811B759A43003846CF /* heros.plist */,
+				28D1F5CC1B6DE9DD00B2B423 /* HeroModel.h */,
+				28D1F5CD1B6DE9DD00B2B423 /* HeroModel.m */,
 				28D1F5B11B6DE82600B2B423 /* Images.xcassets */,
 				28D1F5B31B6DE82600B2B423 /* LaunchScreen.xib */,
 				28D1F5A41B6DE82600B2B423 /* Supporting Files */,
@@ -200,8 +255,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				28D1F5B01B6DE82600B2B423 /* Main.storyboard in Resources */,
+				28F28DBD1B74CDFE00431179 /* ConclusionViewController.xib in Resources */,
+				28F28DB51B70A5E700431179 /* Searcher.plist in Resources */,
 				28D1F5B51B6DE82600B2B423 /* LaunchScreen.xib in Resources */,
+				28D1F5CB1B6DE9BE00B2B423 /* temp.plist in Resources */,
+				281F88821B759A43003846CF /* heros.plist in Resources */,
 				28D1F5B21B6DE82600B2B423 /* Images.xcassets in Resources */,
+				28D1F5D81B6E116400B2B423 /* HeroPickerXib.xib in Resources */,
+				28D1F6111B6E3E6100B2B423 /* placeholder.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,8 +281,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				28D1F5AD1B6DE82600B2B423 /* ViewController.m in Sources */,
+				281F88871B783509003846CF /* PositionView.m in Sources */,
+				280CD48A1B7A1B35008EF14D /* SideButton.m in Sources */,
+				28E9BA401B6F7F970029CB16 /* HeroButton.m in Sources */,
+				28F28DBC1B74CDFE00431179 /* ConclusionViewController.m in Sources */,
+				28D1F5CE1B6DE9DD00B2B423 /* HeroModel.m in Sources */,
 				28D1F5AA1B6DE82600B2B423 /* AppDelegate.m in Sources */,
 				28D1F5A71B6DE82600B2B423 /* main.m in Sources */,
+				28D1F5D61B6E0E4A00B2B423 /* HeroPickerView.m in Sources */,
+				281F88801B758EED003846CF /* ConlusionView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,7 +367,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -337,7 +405,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -350,6 +418,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = LOLAnalyzer/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -360,6 +429,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = LOLAnalyzer/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -378,6 +448,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = LOLAnalyzerTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LOLAnalyzer.app/LOLAnalyzer";
@@ -393,6 +464,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = LOLAnalyzerTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LOLAnalyzer.app/LOLAnalyzer";
@@ -418,6 +490,7 @@
 				28D1F5C61B6DE82600B2B423 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		28D1F5C71B6DE82600B2B423 /* Build configuration list for PBXNativeTarget "LOLAnalyzerTests" */ = {
 			isa = XCConfigurationList;
@@ -426,6 +499,7 @@
 				28D1F5C91B6DE82600B2B423 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
