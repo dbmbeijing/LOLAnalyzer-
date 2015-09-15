@@ -12,7 +12,7 @@
 @interface SideButton : UIButton
 @property (strong, nonatomic)HeroButton* button;
 @property (copy, nonatomic)NSString* name;
-
+@property (getter=isBlue,nonatomic)BOOL isBlue;
 
 
 @end

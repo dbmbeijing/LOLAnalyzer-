@@ -13,8 +13,8 @@
 -(void)setHeroForButton:(HeroModel *)HeroForButton{
     _HeroForButton = HeroForButton;
     if (HeroForButton) {
-        [self setBackgroundImage:[UIImage imageNamed:HeroForButton.icon] forState:UIControlStateHighlighted];
-        [self setBackgroundImage:[UIImage imageNamed:HeroForButton.icon] forState:UIControlStateDisabled];
+//        [self setBackgroundImage:[UIImage imageNamed:HeroForButton.icon] forState:UIControlStateHighlighted];
+//        [self setBackgroundImage:[UIImage imageNamed:HeroForButton.icon] forState:UIControlStateDisabled];
         [self setBackgroundImage:[UIImage imageNamed:HeroForButton.icon] forState:UIControlStateNormal];
     }
    }

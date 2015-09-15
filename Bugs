@@ -1,0 +1,30 @@
+
+//BUGS:键盘操作 通知: self.view maketransform
+//modal时,自定义的viewcontroller继承自原viewcontroller
+//导致所有原来按钮都包含其中 完全一样,修改父类后(uiviewcontroller)
+
+guesspicker消失,一旦点击searchLaunch,CPU使用率飙升达100%
+//点击一次不显示,点击第二次时报错:数组越界,猜测原因,点击时减少guessHeroes数组内容
+//原因:-(UIView*)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{方法中加入了pickerview reload ------死循环
+
+nsnumber之间不可直接运算 打印用@
+
+数字计算时变量中出现巨大数字:
+可能性1:内存地址被混入变量
+可能性2:基础数据int,float等未初始化就被使用,导致随机垃圾值被混入变量中
+
+
+点击清除左侧/右侧队伍后,buttondisable的图片变为placeholder
+原因是原button未设置disabled的图片,却在清空时设置了disabled的图片为placeholder,导致后续disabled按钮保持显示placeholder
+
+HeroModel*model =  self.heroes[number.longValue];
+会导致崩溃, 无法long无法作数组下标
+
+
+当精度不同的数字进行比较时,比较结果可能有问题
+比如0.50可能会大于0.5
+最后的conclusionview里比较胜率后变换颜色, 出现50.00对50.00时左白右灰
+应为全部白色
+原因即在不同精度小数进行了比较
+所以需要取得相同精度
+取二位小数办法:    CGFloat finalBrz =floor(temp*100)/100;

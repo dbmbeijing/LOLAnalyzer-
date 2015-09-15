@@ -4,70 +4,27 @@
 //
 //  Created by soppysonny on 15/8/2.
 //  Copyright (c) 2015年 soppysonny. All rights reserved.
-//what's next : 钟情
-
-//豪华版功能:图像搜索
-//目的:套路大全/胜率计算/阵容分析
-
-//待优化:多线程,复数按钮的相似方法可使用统一方法,分别使用block,通知,代理
-//第二页:多个按键同时移动(真机测试)
-//字体,边框(圆角),按钮纹理
-/*
-目标效果:一个方法提供多个按钮使用,方法能够识别是哪个按钮(无法实现)
- 尝试1:自定义按钮,为按钮添加对应属性.未能想出单个方法提供多个按钮使用的做法
- 尝试2:代理: 自定义按钮文件中添加协议,单个方法对应单个按钮(姑且尝试)未能实现
- 尝试3:通知:实现
-
- 目标效果:储存理想队形直接读取(套路大全)
- 涉及知识:偏好设置储存
- 
- 胜率计算结果界面:collectionView(网易新闻)
- */
-
-//BanPick界面
-//套路队伍:输入数组
-//键盘弹出时有向下拖拽收起键盘手势(停止编辑,收起所有picker) UISwipeGestureRecognizerDirectionDown
-//picker添加自定义bar,确定键点击时将所选英雄传入按键
-//第二个界面:
-//判断拖拽的按钮时使用大量if判断,应写个枚举,使用switch
-
-//位置分配界面
-//让用户确定阵容位置,拖拽可互换(nscache/nsdictionaryvalue:heromodel key@"mid")
-
-/*
- 1.按钮添加
- 2.队伍位置猜测,nscache ab队, 对比index更新:cache在内存吃紧时会被释放,此处使用NSDictionary保证稳定,返回banpick页面时清空dict
-*/
-//3.用NSCache传递/block已选队伍分析胜率
-/*
-1, switch选择 蓝色紫色方
-2,各个英雄的位置适应度排名确定位置分配,按钮确定并计算分析阵容胜率
-3,各个按钮可拖拽交换操作,拖拽之后更新对应位置
-4,
- */
-//BUGS:键盘操作 通知: self.view maketransform
-//modal时,自定义的viewcontroller继承自原viewcontroller
-//导致所有原来按钮都包含其中 完全一样,修改父类后(uiviewcontroller)
-//guesspicker消失,一旦点击searchLaunch,CPU使用率飙升达100%
-//点击一次不显示,点击第二次时报错:数组越界,猜测原因,点击时减少guessHeroes数组内容
-//原因:-(UIView*)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{方法中加入了pickerview reload ------死循环
-
 
 #import "ViewController.h"
 #import "HeroModel.h"
 #import "HeroPickerView.h"
 //#import "UIButton_UIButton_HeroModel.h"//有问题
 #import "HeroButton.h"
-#import "ConclusionViewController.h"
+//#import "ConclusionViewController.h"
 #import "SideButton.h"
+#import "ConfigHeader.h"
+#import <objc/runtime.h>
 
 #define btnSize [UIScreen mainScreen].bounds.size.height*0.09
 #define screenWidth [UIScreen mainScreen].bounds.size.width
 #define screenHeight [UIScreen mainScreen].bounds.size.height
 #define txtpicGap 160
-#define textSize btnSize*2.5
+#define textSize btnSize*2.3
 #define pickerWidth self.HeroPicker.frame.size.width*0.8
-@interface ViewController ()<UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate,UIAlertViewDelegate>
+#define MAX_SHORTCUT_Y CGRectGetMaxY(_shortCut.frame)
+#define MIN_SHORTCUT_X CGRectGetMinX(_shortCut.frame)
+
+@interface ViewController ()<UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate,UISearchBarDelegate,UIAlertViewDelegate>
 
 @property (strong, nonatomic)UIPickerView *HeroPicker;
 @property (strong, nonatomic)UIPickerView *GuessPicker;
@@ -87,6 +44,18 @@
 @property (strong, nonatomic)HeroButton* memberB4;
 @property (strong, nonatomic)HeroButton* memberB5;
 
+@property (strong, nonatomic)UIImageView* coverA1;
+@property (strong, nonatomic)UIImageView* coverA2;
+@property (strong, nonatomic)UIImageView* coverA3;
+@property (strong, nonatomic)UIImageView* coverA4;
+@property (strong, nonatomic)UIImageView* coverA5;
+
+@property (strong, nonatomic)UIImageView* coverB1;
+@property (strong, nonatomic)UIImageView* coverB2;
+@property (strong, nonatomic)UIImageView* coverB3;
+@property (strong, nonatomic)UIImageView* coverB4;
+@property (strong, nonatomic)UIImageView* coverB5;
+
 @property (strong, nonatomic)HeroButton* Banned1;
 @property (strong, nonatomic)HeroButton* Banned2;
 @property (strong, nonatomic)HeroButton* Banned3;
@@ -95,7 +64,12 @@
 @property (strong, nonatomic)HeroButton* Banned6;
 
 @property (strong, nonatomic)UITextField* shortCut;
+@property (copy, nonatomic)NSString *shufflePlchd;
+@property (strong, nonatomic)NSArray* keyWordsArr;
+
 @property (strong, nonatomic)UIButton* searchLaunch;
+@property (strong, nonatomic)UIButton* searchCancel;
+
 @property (strong, nonatomic)UIButton* lockButton;
 @property (strong, nonatomic)HeroModel* tempHero;
 @property (strong, nonatomic)UIPickerView* currentPicker;
@@ -110,6 +84,8 @@
 @property (strong, nonatomic)NSArray* allTeam;
 @property (strong, nonatomic)NSArray* teamLeft;
 @property (strong, nonatomic)NSArray* teamRight;
+@property (strong, nonatomic)NSArray* banPickLeft;
+@property (strong, nonatomic)NSArray* banPickRight;
 
 @property (strong, nonatomic)NSArray* banLeft;
 @property (strong, nonatomic)NSArray* banRight;
@@ -150,10 +126,36 @@
 @property (strong, nonatomic)UIButton *clearAButton;
 @property (strong, nonatomic)UIButton *clearBButton;
 
+@property (assign,nonatomic)int adCount;
+
 @end
 
 @implementation ViewController
-#pragma mark 代理传值
+#pragma mark 代理方法
+-(void)YouMiAdTest{
+    if (!((self.adCount+1)%3-1)) {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [NewWorldSpt showQQWSPTAction:^(BOOL flag){
+            if (flag) {
+               
+            }
+            else{
+                
+            }
+        }];
+    });
+    }
+      self.adCount++;
+}
+
+
+-(void)destroy{
+    if (_coverView) {
+        _coverView  = nil;
+    }
+}
+
+
 -(void)changePositionRight:(HeroModel *)hero :(NSString *)key{
     [self.teamcacheB setObject:hero forKey:key];
     
@@ -179,12 +181,16 @@
     self.memberB5.HeroForButton = [self.teamcacheB objectForKey:@"rightSup"];
 //    
     for (HeroButton*button in self.allTeam) {
-        [self.view addSubview:button];
-        
+        @autoreleasepool {
+                    [self.view addSubview:button];
+        }
     }
 }
 
 #pragma mark 按钮懒加载
+
+
+
 -(UIButton *)clearAButton{
     if (!_clearAButton) {
         _clearAButton = [[UIButton alloc]initWithFrame:CGRectMake(self.Banned1.frame.origin.x+1.1*btnSize, screenHeight-btnSize, btnSize*1.6, btnSize*0.75)];
@@ -215,11 +221,12 @@
 }
 -(UIButton *)modalButton{
     if (!_modalButton) {
-        _modalButton = [[UIButton alloc]initWithFrame:CGRectMake(screenWidth*0.5-btnSize, 40+20, btnSize*2, btnSize)];
+        _modalButton = [[UIButton alloc]initWithFrame:CGRectMake(screenWidth*0.5-btnSize*1.5, screenHeight-btnSize*2.5, btnSize*3, btnSize*0.92)];
         [_modalButton addTarget:self action:@selector(modalButtonClicked) forControlEvents:UIControlEventTouchUpInside];
+        
         //此button仍需修改样式
-        [_modalButton setBackgroundImage:[UIImage imageNamed:@"boost_normal"] forState:UIControlStateNormal];
-                [_modalButton setBackgroundImage:[UIImage imageNamed:@"boost_normal"] forState:UIControlStateHighlighted];
+        [_modalButton setBackgroundImage:[UIImage imageNamed:@"rounded_img_atool"] forState:UIControlStateNormal];
+
     }return _modalButton;
 }
 -(SideButton *)countA1{
@@ -481,52 +488,139 @@
 
 #pragma mark 点击方法
 
+-(void)cancelPicker{
+   HeroButton*tempBtn  = self.clickedBtn.lastObject;
+     [objc_getAssociatedObject(tempBtn, @"cover") removeFromSuperview];
+    
+    [self.HeroPicker removeFromSuperview];
+    [self.GuessPicker removeFromSuperview];
+    [self.shortCut removeFromSuperview];
+    [self.searchLaunch removeFromSuperview];
+    [self.searchCancel removeFromSuperview];
+    [self.clearAButton setEnabled:YES];
+    [self.clearBButton setEnabled:YES];
+    [self removeCountA];
+    [self removeCountB];
+    [self removePtnA];
+    [self removePtnB];
+    for (HeroButton *but in self.allTeam) {
+        @autoreleasepool {
+        [but setEnabled:YES];
+        }
+        }
+    for (HeroButton*button in self.allTeam) {
+        @autoreleasepool {
+            if (button.HeroForButton) {
+                NSString*tempStr = button.HeroForButton.name;
+                NSMutableArray *arr = [NSMutableArray array];
+                for (int i = 0; i<self.currentHeroes.count; i++) {
+                    [arr addObject:self.currentHeroes[i]];
+                }
+                
+                for (HeroModel*model in arr) {
+                    if ([model.name isEqualToString:tempStr]) {
+                        [self.currentHeroes removeObject:model];
+                        
+                    }
+                }
+            }
+        }
+    }
+    //如果pick完成,显示modal按钮
+    BOOL allPicked = YES;
+    for (HeroButton* but in self.teamLeft) {
+        @autoreleasepool {
+            if (!but.HeroForButton) {
+                allPicked = NO;
+                break;
+            }
+        }
+    }
+    for (HeroButton* but in self.teamRight) {
+        @autoreleasepool {
+            if (!but.HeroForButton) {
+                allPicked = NO;
+                break;
+            }
+        }
+    }
+    
+    if (allPicked) {
+        [self.view addSubview:self.modalButton];
+    }
+}
+
 -(void)clearAll{
     for (HeroButton*button in self.allTeam) {
-        if (button.HeroForButton) {
-            [self.currentHeroes addObject:button.HeroForButton];
+        @autoreleasepool {
+            if (button.HeroForButton) {
+                [self.currentHeroes addObject:button.HeroForButton];
+            }
+            button.HeroForButton = nil;
+            [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+//            [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
+//            [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
         }
-        button.HeroForButton = nil;
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateHighlighted];
     }
 }//清除全部队伍方法
 -(void)clearLeft{
-    for (HeroButton*button in self.teamLeft) {
+    for (HeroButton*button in self.banPickLeft) {
         //检测是否存在model,并加入可选数组currentheroes中
-        if (button.HeroForButton) {
-            [self.currentHeroes addObject:button.HeroForButton];
+        @autoreleasepool {
+            if (button.HeroForButton) {
+                [self.currentHeroes addObject:button.HeroForButton];
+            }
+            button.HeroForButton = nil;
+            //.HeroForButton方法中添加了检测model是否存在的判断,否则会报invalid
+            if (button.isBanned){
+                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
+//                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+            }else{
+                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
+//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
+            }
         }
-        //.HeroForButton方法中添加了检测model是否存在的判断,否则会报invalid
-         button.HeroForButton = nil;
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateHighlighted];
     }
+    [self.modalButton removeFromSuperview];
+    if(!_coverView){
     UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"已清空左侧队伍" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-    [alt show];
+        [alt show];}
     };
 -(void)clearRight{
     //同clearLeft
-    for (HeroButton*button in self.teamRight) {
-        if (button.HeroForButton) {
-            [self.currentHeroes addObject:button.HeroForButton];
+    for (HeroButton*button in self.banPickRight) {
+        @autoreleasepool {
+            if (button.HeroForButton) {
+                [self.currentHeroes addObject:button.HeroForButton];
+            }
+            button.HeroForButton = nil;
+            //.HeroForButton方法中添加了检测model是否存在的判断,否则会报invalid
+            if (button.isBanned){
+                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
+//                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+            }else{
+                
+                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
+//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
+            }
+
         }
-        button.HeroForButton = nil;
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
-        [button setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateHighlighted];
     }
+        [self.modalButton removeFromSuperview];
+    if(!_coverView){
     UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"已清空右侧队伍" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-    [alt show];
+        [alt show];}
 };
+
 - (void)searcherLaunched{
     
     //点击搜索关键字
     [self.guessHeroes removeAllObjects];
     for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+         @autoreleasepool {
+             [but setEnabled:NO];}
     }
     
     self.keyWord = self.shortCut.text;
@@ -534,7 +628,8 @@
         NSArray*arr = self.searcherDict[self.keyWord];
         [self.HeroPicker removeFromSuperview];
         for (NSNumber *number in arr) {
-            HeroModel*model =  self.heroes[number.longValue];
+             @autoreleasepool {
+            HeroModel*model =  self.heroes[number.intValue];
             NSString* nameString = model.name;
             BOOL isContained = 0;
             for (HeroModel*model in self.currentHeroes) {
@@ -550,18 +645,19 @@
             if (isContained) {
                 [self.guessHeroes addObject:self.heroes[number.intValue]];
                           }
-            
+             }
         }
         //搜索没有内容的适合报警告
         if (self.guessHeroes.count==0) {
             
             UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"已被选定" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             
-            for (UIButton*but in self.allTeam) {
-                but.enabled = YES;
-            }
+//            for (UIButton*but in self.allTeam) { @autoreleasepool {
+//                but.enabled = YES;}
+//            }
             [alt show];
-            [self.GuessPicker removeFromSuperview];
+            [self.view addSubview:self.HeroPicker];
+//            [self.GuessPicker removeFromSuperview];
         }else{
             
             [self.GuessPicker reloadAllComponents];
@@ -573,11 +669,11 @@
     }else {
         UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"无符合关键字英雄" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         
-        for (UIButton*but in self.allTeam) {
-            but.enabled = YES;
-        }
+//        for (UIButton*but in self.allTeam) { @autoreleasepool {
+//            but.enabled = YES;}
+//        }
         [alt show];
-        [self.GuessPicker removeFromSuperview];
+        
     }
     
 }
@@ -593,73 +689,73 @@
     HeroModel* rightMid = [[HeroModel alloc]init];
     HeroModel* rightAd = [[HeroModel alloc]init];
     HeroModel* rightSup = [[HeroModel alloc]init];
-    
     NSMutableArray *compareA =[NSMutableArray arrayWithObjects:self.memberA1,self.memberA2,self.memberA3,self.memberA4,self.memberA5, nil];
     
     int iMid = 0;
-    for (HeroButton* but in compareA) {
+    for (HeroButton* but in compareA) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (iMid < model.midIndex.intValue) {
             iMid = model.midIndex.intValue;
             leftMid = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareA) {
+    for (HeroButton*but in compareA) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:leftMid.name]) {
             [compareA removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     
     int iTop = 0;
     for (HeroButton* but in compareA) {
+         @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (iTop < model.topIndex.intValue) {
             iTop = model.topIndex.intValue;
             leftTop = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareA) {
+    for (HeroButton*but in compareA) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:leftTop.name]) {
             [compareA removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     int iJun = 0;
-    for (HeroButton* but in compareA) {
+    for (HeroButton* but in compareA) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (iJun < model.jungleIndex.intValue) {
             iJun = model.jungleIndex.intValue;
             leftJun = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareA) {
+    for (HeroButton*but in compareA) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:leftJun.name]) {
             [compareA removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     
     int iAd = 0;
-    for (HeroButton* but in compareA) {
+    for (HeroButton* but in compareA) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (iAd < model.adIndex.intValue) {
             iAd = model.adIndex.intValue;
             leftAd = model;
-        }
+        }  }
     }
-    for (HeroButton*but in compareA) {
+    for (HeroButton*but in compareA) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:leftAd.name]) {
             [compareA removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     leftSup = [compareA.lastObject HeroForButton];
@@ -675,70 +771,71 @@
     NSMutableArray *compareB =[NSMutableArray arrayWithObjects:self.memberB1,self.memberB2,self.memberB3,self.memberB4,self.memberB5, nil];
     
     int Mid = 0;
-    for (HeroButton* but in compareB) {
+    for (HeroButton* but in compareB) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (Mid < model.midIndex.intValue) {
             Mid = model.midIndex.intValue;
             rightMid = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareB) {
+    for (HeroButton*but in compareB) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:rightMid.name]) {
             [compareB removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     
     int Top = 0;
-    for (HeroButton* but in compareB) {
+    for (HeroButton* but in compareB) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (Top < model.topIndex.intValue) {
             Top = model.topIndex.intValue;
             rightTop = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareB) {
+    for (HeroButton*but in compareB) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:rightTop.name]) {
             [compareB removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     int Jun = 0;
-    for (HeroButton* but in compareB) {
+    for (HeroButton* but in compareB) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (Jun < model.jungleIndex.intValue) {
             Jun = model.jungleIndex.intValue;
             rightJun = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareB) {
+    for (HeroButton*but in compareB) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:rightJun.name]) {
             [compareB removeObject:but];
             break;
-        }
+        }}
     }
     //-------------
     
     int Ad = 0;
-    for (HeroButton* but in compareB) {
+    for (HeroButton* but in compareB) { @autoreleasepool {
         HeroModel*model = but.HeroForButton;
         if (Ad < model.adIndex.intValue) {
             Ad = model.adIndex.intValue;
             rightAd = model;
-        }
+        }}
     }
-    for (HeroButton*but in compareB) {
+    for (HeroButton*but in compareB) { @autoreleasepool {
         NSString* nameCom = but.HeroForButton.name;
         if ([nameCom isEqualToString:rightAd.name]) {
             [compareB removeObject:but];
             break;
-        }
+        }}
     }
+   
     //-------------
     rightSup = [compareB.lastObject HeroForButton];
     [self.teamcacheB setObject:rightTop forKey:@"rightTop"];
@@ -746,7 +843,7 @@
     [self.teamcacheB setObject:rightMid forKey:@"rightMid"];
     [self.teamcacheB setObject:rightAd forKey:@"rightAd"];
     [self.teamcacheB setObject:rightSup forKey:@"rightSup"];
-    
+   
     self.coverView.memberA1.HeroForButton = [self.teamcacheA objectForKey:@"leftTop"];
     self.coverView.memberA2.HeroForButton = [self.teamcacheA objectForKey:@"leftJun"];
     self.coverView.memberA3.HeroForButton = [self.teamcacheA objectForKey:@"leftMid"];
@@ -763,6 +860,8 @@
     [UIVisualEffectView animateWithDuration:1.0 animations:^{
         self.coverView.transform = CGAffineTransformMakeTranslation(0, -screenHeight);
     }];
+
+
 //    for (HeroButton* button in self.allTeam) {
 //        [button removeFromSuperview];
 //        //        button.HeroForButton  = nil;
@@ -908,25 +1007,29 @@
     }
 }
 -(void)a1clicked{
+    objc_setAssociatedObject(self.memberA1, @"cover", self.coverA1, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverA1];
     [self.modalButton removeFromSuperview];
     [self addCountB];
     [self removeCountA];
     [self addPtnA];
     [self.ptnA1 removeFromSuperview];
     [self removePtnB];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberA1.HeroForButton)
     {
         NSString *nameString = self.memberA1.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
             }
+             }
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberA1.HeroForButton];}
@@ -934,55 +1037,68 @@
     }
     
     for (HeroButton *but in self.allTeam) {
+        @autoreleasepool {
         [but setEnabled:NO];
-    }
-            self.shortCut.placeholder = @"输入英雄关键字查找";
+        }
+        }
+            self.shortCut.placeholder = self.shufflePlchd;
+   
     self.shortCut.frame = CGRectMake(10+btnSize, 50-btnSize+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*3.5, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
-
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(13+btnSize+textSize+btnSize*0.6+3, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
         [self.HeroPicker reloadAllComponents];
         [self.GuessPicker reloadAllComponents];
 
     [self.view addSubview:self.searchLaunch];
     [self.view addSubview:self.shortCut];
+    
      self.GuessPicker.frame =CGRectMake(btnSize, 50-btnSize, 202, 162);
     self.HeroPicker.frame = CGRectMake(btnSize, 50-btnSize, 202, 162);
     [self.view addSubview: self.HeroPicker];
     [self.clickedBtn addObject:self.memberA1];
       [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
-  
+
 }
 -(void)a2clicked{
+    objc_setAssociatedObject(self.memberA2, @"cover", self.coverA2, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverA2];
         [self.modalButton removeFromSuperview];
     [self addCountB];
     [self removeCountA];
     [self addPtnA];
     [self.ptnA2 removeFromSuperview];
     [self removePtnB];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberA2.HeroForButton)
     {
         NSString *nameString = self.memberA2.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+                }
+             }
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberA2.HeroForButton];}
 
     }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
+         }
+         }
+                self.shortCut.placeholder = self.shufflePlchd;
     self.shortCut.frame = CGRectMake(10+btnSize, 50+20+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*3.5, 50+20+txtpicGap, btnSize*0.6, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, 50+20+txtpicGap, btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(13+btnSize+textSize+btnSize*0.6+3,  50+20+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -995,36 +1111,41 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)a3clicked{
+    objc_setAssociatedObject(self.memberA3, @"cover", self.coverA3, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverA3];
     [self.modalButton removeFromSuperview];
     [self addCountB];
     [self removeCountA];
     [self addPtnA];
     [self.ptnA3 removeFromSuperview];
     [self removePtnB];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberA3.HeroForButton)
     {
         NSString *nameString = self.memberA3.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberA3.HeroForButton];}
 
     }
-    for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+    for (HeroButton *but in self.allTeam) { @autoreleasepool {
+        [but setEnabled:NO];}
     }
-    self.shortCut.placeholder = @"输入英雄关键字查找";
+    self.shortCut.placeholder = self.shufflePlchd;
     self.shortCut.frame = CGRectMake(10+btnSize, 70+btnSize+20+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*3.5, 70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, 70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(13+btnSize+textSize+btnSize*0.6+3,  70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1037,24 +1158,28 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)a4clicked{
+    objc_setAssociatedObject(self.memberA4, @"cover", self.coverA4, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverA4];
     [self.modalButton removeFromSuperview];
     [self addCountB];
     [self removeCountA];
     [self addPtnA];
     [self.ptnA4 removeFromSuperview];
     [self removePtnB];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberA4.HeroForButton)
     {
         NSString *nameString = self.memberA4.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+            @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
+                }
             }
         }
         if (!isContained) {
@@ -1062,13 +1187,16 @@
         
     }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
+         }
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
+        self.shortCut.placeholder = self.shufflePlchd;
     self.shortCut.frame = CGRectMake(10+btnSize,70+(btnSize+20)*2+txtpicGap ,textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*3.5, 70+(btnSize+20)*2+txtpicGap,btnSize*0.6, btnSize);
-  //  self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-   // [self.view addSubview:self.lockButton];
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, 70+(btnSize+20)*2+txtpicGap,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, 70+(btnSize+20)*2+txtpicGap, btnSize*0.6, btnSize);
+
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1082,24 +1210,28 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)a5clicked{
+    objc_setAssociatedObject(self.memberA5, @"cover", self.coverA5, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverA5];
     [self.modalButton removeFromSuperview];
     [self addCountB];
     [self removeCountA];
     [self addPtnA];
     [self.ptnA5 removeFromSuperview];
     [self removePtnB];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberA5.HeroForButton)
     {
         NSString *nameString = self.memberA5.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
+                }
             }
         }
         if (!isContained) {
@@ -1107,18 +1239,22 @@
         
     }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
+         }
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5,(btnSize+20)*6+10 , textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
     [self.view addSubview:self.shortCut];
-    self.GuessPicker.frame =CGRectMake(btnSize, 70+(btnSize+20)*3, 202, 162);
-    self.HeroPicker.frame = CGRectMake(btnSize, 70+(btnSize+20)*3, 202, 162);
+    self.GuessPicker.frame =CGRectMake(btnSize, 40+(btnSize+20)*3, 202, 162);
+    self.HeroPicker.frame = CGRectMake(btnSize, 40+(btnSize+20)*3, 202, 162);
     [self.view addSubview: self.HeroPicker];
     [self.clickedBtn addObject:self.memberA5];
     
@@ -1127,25 +1263,29 @@
     
 }
 -(void)b1clicked{
+    objc_setAssociatedObject(self.memberB1, @"cover", self.coverB1, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverB1];
     [self.modalButton removeFromSuperview];
     [self addCountA];
     [self removeCountB];
     [self addPtnB];
     [self.ptnB1 removeFromSuperview];
     [self removePtnA];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberB1.HeroForButton)
     {
         NSString *nameString = self.memberB1.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+                }
+             }
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberB1.HeroForButton];}
@@ -1153,12 +1293,15 @@
     }
     
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
+         }
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5, 50-btnSize+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
-    
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize*1.3, 50-btnSize+txtpicGap, textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+textSize+btnSize*1.3, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(16+textSize+btnSize*1.9, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
@@ -1171,37 +1314,43 @@
     
 }
 -(void)b2clicked{
+    objc_setAssociatedObject(self.memberB2, @"cover", self.coverB2, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverB2];
         [self.modalButton removeFromSuperview];
     [self addCountA];
     [self removeCountB];
     [self addPtnB];
     [self.ptnB2 removeFromSuperview];
     [self removePtnA];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberB2.HeroForButton)
         {
             NSString *nameString = self.memberB2.HeroForButton.name;
             BOOL isContained = 0;
             for (HeroModel*model in self.currentHeroes) {
+                 @autoreleasepool {
                 if ([model.name isEqualToString:nameString]) {
                     isContained = YES;
                     break;
                 }else{
                     continue;
-                }
+                }}
             }
             if (!isContained) {
                 [self.currentHeroes addObject:self.memberB2.HeroForButton];}
             
         }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5, 50+20+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, 50+20+txtpicGap, btnSize*0.6, btnSize);
-
+         }
+         }
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize*1.3, 50+20+txtpicGap, textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+textSize+btnSize*1.3, 50+20+txtpicGap, btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(16+textSize+btnSize*1.9, 50+20+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
@@ -1213,37 +1362,43 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)b3clicked{
+    objc_setAssociatedObject(self.memberB3, @"cover", self.coverB3, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverB3];
     [self.modalButton removeFromSuperview];
     [self addCountA];
     [self removeCountB];
     [self addPtnB];
     [self.ptnB3 removeFromSuperview];
     [self removePtnA];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberB3.HeroForButton)
     {
         NSString *nameString = self.memberB3.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
             }
+             }
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberB3.HeroForButton];}
         
     }
     for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+         @autoreleasepool {
+             [but setEnabled:NO];}
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5, 70+btnSize+20+txtpicGap, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, 70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
-
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize*1.3, 70+btnSize+20+txtpicGap, textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+textSize+btnSize*1.3, 70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
+   self.searchCancel.frame = CGRectMake(16+textSize+btnSize*1.9, 70+btnSize+20+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
@@ -1255,25 +1410,28 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)b4clicked{
+    objc_setAssociatedObject(self.memberB4, @"cover", self.coverB4, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverB4];
     [self.modalButton removeFromSuperview];
     [self addCountA];
     [self removeCountB];
     [self addPtnB];
     [self.ptnB4 removeFromSuperview];
     [self removePtnA];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberB4.HeroForButton)
     {
         NSString *nameString = self.memberB4.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberB4.HeroForButton];}
@@ -1281,16 +1439,20 @@
     }
 
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
+         }
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5,70+(btnSize+20)*2+txtpicGap , textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, 70+(btnSize+20)*2+txtpicGap,btnSize*0.6, btnSize);
-
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize*1.3,70+(btnSize+20)*2+txtpicGap , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize*1.3+textSize, 70+(btnSize+20)*2+txtpicGap,btnSize*0.6, btnSize);
+    self.searchCancel.frame = CGRectMake(16+textSize+btnSize*1.9, 70+(btnSize+20)*2+txtpicGap, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
     [self.view addSubview:self.shortCut];
+    
     self.GuessPicker.frame =CGRectMake(screenWidth-5-btnSize-190, 70+(btnSize+20)*2, 202, 162);
     self.HeroPicker.frame = CGRectMake(screenWidth-5-btnSize-190, 70+(btnSize+20)*2, 202, 162);
     [self.view addSubview: self.HeroPicker];
@@ -1298,6 +1460,8 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
 }
 -(void)b5clicked{
+    objc_setAssociatedObject(self.memberB5, @"cover", self.coverB5, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.view addSubview:self.coverB5];
     [self.modalButton removeFromSuperview];
     [self addCountA];
     [self removeCountB];
@@ -1305,37 +1469,40 @@
     [self.ptnB5 removeFromSuperview];
     [self removePtnA];
     
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.memberB5.HeroForButton)
     {
         NSString *nameString = self.memberB5.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.memberB5.HeroForButton];}
         
     }
     for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+         @autoreleasepool {
+             [but setEnabled:NO];}
     }
-                self.shortCut.placeholder = @"输入英雄关键字查找";
-    self.shortCut.frame = CGRectMake(10+btnSize*1.5,(btnSize+20)*6+10, textSize, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-
+                self.shortCut.placeholder = self.shufflePlchd;
+    self.shortCut.frame = CGRectMake(10+btnSize*1.3,(btnSize+20)*6+10, textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+textSize+btnSize*1.3, (btnSize+20)*6+10,btnSize*0.6, btnSize);
+ self.searchCancel.frame = CGRectMake(16+textSize+btnSize*1.9, (btnSize+20)*6+10,btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
     [self.view addSubview:self.searchLaunch];
     [self.view addSubview:self.shortCut];
-    self.GuessPicker.frame =CGRectMake(screenWidth-5-btnSize-190, 70+(btnSize+20)*3, 202, 162);
-    self.HeroPicker.frame = CGRectMake(screenWidth-5-btnSize-190, 70+(btnSize+20)*3, 202, 162);
+    self.GuessPicker.frame =CGRectMake(screenWidth-5-btnSize-190, 40+(btnSize+20)*3, 202, 162);
+    self.HeroPicker.frame = CGRectMake(screenWidth-5-btnSize-190, 40+(btnSize+20)*3, 202, 162);
     [self.view addSubview: self.HeroPicker];
     [self.clickedBtn addObject:self.memberB5];
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
@@ -1343,33 +1510,36 @@
 }
 -(void)ban1Clicked{
     [self.modalButton removeFromSuperview];
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     if(self.Banned1.HeroForButton)
     {
         NSString *nameString = self.Banned1.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned1.HeroForButton];}
         
     }
     for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+         @autoreleasepool {
+             [but setEnabled:NO];}
     }
     
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-    //self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
+
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1384,34 +1554,36 @@
     
 }
 -(void)ban2Clicked{
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     [self.modalButton removeFromSuperview];
     if(self.Banned2.HeroForButton)
     {
         NSString *nameString = self.Banned2.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned2.HeroForButton];}
         
     }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
+         }}
    
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-    //self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1426,20 +1598,21 @@
     
 }
 -(void)ban3Clicked{
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     [self.modalButton removeFromSuperview];
     if(self.Banned3.HeroForButton)
     {
         NSString *nameString = self.Banned3.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned3.HeroForButton];}
@@ -1447,14 +1620,15 @@
     }
 
     for (HeroButton *but in self.allTeam) {
-        [but setEnabled:NO];
+         @autoreleasepool {
+             [but setEnabled:NO];}
     }
     
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-    //self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1469,20 +1643,21 @@
     
 }
 -(void)ban4Clicked{
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     [self.modalButton removeFromSuperview];
     if(self.Banned4.HeroForButton)
     {
         NSString *nameString = self.Banned4.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned4.HeroForButton];}
@@ -1490,14 +1665,15 @@
     }
 
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
+         }}
     
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-  //  self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1513,34 +1689,36 @@
     
 }
 -(void)ban5Clicked{
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     [self.modalButton removeFromSuperview];
     if(self.Banned5.HeroForButton)
     {
         NSString *nameString = self.Banned5.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
             }
-        }
+             }}
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned5.HeroForButton];}
         
     }
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
+         }}
     
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-   // self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1555,20 +1733,21 @@
     
 }
 -(void)ban6Clicked{
-    [self.clearAButton removeFromSuperview];
-    [self.clearBButton removeFromSuperview];
+    [self.clearAButton setEnabled:NO];
+    [self.clearBButton setEnabled:NO];
     [self.modalButton removeFromSuperview];
     if(self.Banned6.HeroForButton)
     {
         NSString *nameString = self.Banned6.HeroForButton.name;
         BOOL isContained = 0;
         for (HeroModel*model in self.currentHeroes) {
+             @autoreleasepool {
             if ([model.name isEqualToString:nameString]) {
                 isContained = YES;
                 break;
             }else{
                 continue;
-            }
+            }}
         }
         if (!isContained) {
             [self.currentHeroes addObject:self.Banned6.HeroForButton];}
@@ -1576,14 +1755,15 @@
     }
 
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:NO];
-    }
+         }}
     
     self.shortCut.placeholder = @"禁用英雄";
-    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10, btnSize*3, btnSize);
-    self.searchLaunch.frame = CGRectMake(13+btnSize*4, (btnSize+20)*6+10,btnSize*0.6, btnSize);
-   // self.lockButton.frame = CGRectMake(18+btnSize*4.6, self.searchLaunch.frame.origin.y, btnSize, btnSize);
-    //[self.view addSubview:self.lockButton];
+    self.shortCut.frame = CGRectMake(10+btnSize,(btnSize+20)*6+10 , textSize, btnSize);
+    self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, (btnSize+20)*6+10 ,btnSize*0.6, btnSize);
+    self.searchCancel.frame =  CGRectMake(13+btnSize+textSize+btnSize*0.6+3, (btnSize+20)*6+10, btnSize*0.6, btnSize);
+    [self.view addSubview:self.searchCancel];
 
     [self.HeroPicker reloadAllComponents];
     [self.GuessPicker reloadAllComponents];
@@ -1591,47 +1771,62 @@
     [self.view addSubview:self.shortCut];
     self.GuessPicker.frame =CGRectMake(5+btnSize, 40+(btnSize+20)*3, 202, 162);
     self.HeroPicker.frame = CGRectMake(5+btnSize, 40+(btnSize+20)*3, 202, 162);
-    
     [self.view addSubview: self.HeroPicker];
     [self.clickedBtn addObject:self.Banned6];
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
     
 }
-
+-(void)textFieldDidBeginEditing:(UITextField *)textField{
+    NSArray*temp = [NSArray arrayWithArray:self.shortCut.subviews];
+   
+    for (UIView*view in temp) {
+        if ([view isKindOfClass:NSClassFromString( @"UITextFieldLabel")]) {
+            UILabel*lable = (UILabel*)view;
+            lable.numberOfLines = 0;
+        }
+    }
+    
+}
 #pragma mark pickerView方法
 -(void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
     for (HeroButton *but in self.allTeam) {
+         @autoreleasepool {
         [but setEnabled:YES];
+         }
     }
+    
+    HeroButton*tempBtn  = self.clickedBtn.lastObject;
+   
     if(pickerView == self.HeroPicker ){
         HeroModel*temp = self.currentHeroes[row];
-
-        
-        HeroButton*tempBtn  = self.clickedBtn.lastObject;
-
         [self.HeroPicker removeFromSuperview];
         [self.shortCut removeFromSuperview];
         [self.searchLaunch removeFromSuperview];
+            [self.searchCancel removeFromSuperview];
         tempBtn.HeroForButton  = temp;
-        
+
     }else{
         HeroModel* tempModel = self.guessHeroes[row];
         [self.currentHeroes removeObject:tempModel];
-        HeroButton*tempBtn2 = self.clickedBtn.lastObject;
-        tempBtn2.HeroForButton = tempModel;
+       
+        tempBtn.HeroForButton = tempModel;
 
         [self.GuessPicker removeFromSuperview];
         [self.shortCut removeFromSuperview];
         [self.searchLaunch removeFromSuperview];
+            [self.searchCancel removeFromSuperview];
         
     }
-    [self.view addSubview:self.clearAButton];
-    [self.view addSubview:self.clearBButton];
+           UIImageView*temp = objc_getAssociatedObject(tempBtn, @"cover");
+    [temp removeFromSuperview];
+    [self.clearAButton setEnabled:YES];
+    [self.clearBButton setEnabled:YES];
     [self removeCountA];
     [self removeCountB];
     [self removePtnA];
     [self removePtnB];
     for (HeroButton*button in self.allTeam) {
+        @autoreleasepool {
         if (button.HeroForButton) {
             NSString*tempStr = button.HeroForButton.name;
             NSMutableArray *arr = [NSMutableArray array];
@@ -1643,22 +1838,28 @@
                 if ([model.name isEqualToString:tempStr]) {
                     [self.currentHeroes removeObject:model];
 
+                    }
                 }
             }
         }
     }
+    //如果pick完成,显示modal按钮
     BOOL allPicked = YES;
     for (HeroButton* but in self.teamLeft) {
+         @autoreleasepool {
         if (!but.HeroForButton) {
             allPicked = NO;
             break;
-        }
+            }
+         }
     }
     for (HeroButton* but in self.teamRight) {
+         @autoreleasepool {
         if (!but.HeroForButton) {
             allPicked = NO;
             break;
         }
+         }
     }
     
     if (allPicked) {
@@ -1666,25 +1867,28 @@
     }
 }
 -(UIView*)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{
+  
+    HeroPickerView *pickerviewtemp = [HeroPickerView heroPickerView];
+    HeroButton*tempBtn  = self.clickedBtn.lastObject;
+   UIImageView* cover =  objc_getAssociatedObject(tempBtn, @"cover");
     if(pickerView == self.HeroPicker)
     {
-        HeroPickerView *pickerviewtemp = [HeroPickerView heroPickerView];
+
         pickerviewtemp.hero = self.currentHeroes[row];
-        pickerviewtemp.label.font = [UIFont systemFontOfSize:11];
-        return pickerviewtemp;
+
     }else{
-        HeroPickerView* guessPickerview = [HeroPickerView heroPickerView];
-        guessPickerview.hero = self.guessHeroes[row];
-        guessPickerview.label.font = [UIFont systemFontOfSize:11];
-        return guessPickerview;
+        pickerviewtemp.hero = self.guessHeroes[row];
     }
+    
+    cover.image = [UIImage imageNamed:pickerviewtemp.hero.icon];
+        pickerviewtemp.label.font = [UIFont systemFontOfSize:12];
+    
+     return pickerviewtemp;
 }
 - (CGFloat)pickerView:(UIPickerView *)pickerView rowHeightForComponent:(NSInteger)component{
-   if(pickerView==self.HeroPicker)
-   { return 60;}
-   else{
+
        return 60;
-   }
+ 
 }
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
     if(pickerView==self.HeroPicker)
@@ -1703,6 +1907,62 @@
 }
 
 #pragma mark 懒加载
+- (UIImageView *)coverA1{
+    if (!_coverA1) {
+        _coverA1 = [[UIImageView alloc]initWithFrame:self.memberA1.frame];
+    }return _coverA1;
+}
+- (UIImageView *)coverA2{
+    if (!_coverA2) {
+        _coverA2 = [[UIImageView alloc]initWithFrame:self.memberA2.frame];
+    }return _coverA2;
+}
+- (UIImageView *)coverA3{
+    if (!_coverA3) {
+        _coverA3 = [[UIImageView alloc]initWithFrame:self.memberA3.frame];
+    }return _coverA3;
+}
+- (UIImageView *)coverA4{
+    if (!_coverA4) {
+        _coverA4 = [[UIImageView alloc]initWithFrame:self.memberA4.frame];
+    }return _coverA4;
+}
+- (UIImageView *)coverA5{
+    if (!_coverA5) {
+        _coverA5 = [[UIImageView alloc]initWithFrame:self.memberA5.frame];
+    }return _coverA5;
+}
+- (UIImageView *)coverB1{
+    if (!_coverB1) {
+        _coverB1 = [[UIImageView alloc]initWithFrame:self.memberB1.frame];
+    }return _coverB1;
+}
+- (UIImageView *)coverB2{
+    if (!_coverB2) {
+        _coverB2 = [[UIImageView alloc]initWithFrame:self.memberB2.frame];
+    }return _coverB2;
+}
+- (UIImageView *)coverB3{
+    if (!_coverB3) {
+        _coverB3 = [[UIImageView alloc]initWithFrame:self.memberB3.frame];
+    }return _coverB3;
+}
+- (UIImageView *)coverB4{
+    if (!_coverB4) {
+        _coverB4 = [[UIImageView alloc]initWithFrame:self.memberB4.frame];
+    }return _coverB4;
+}
+- (UIImageView *)coverB5{
+    if (!_coverB5) {
+        _coverB5 = [[UIImageView alloc]initWithFrame:self.memberB5.frame];
+    }return _coverB5;
+}
+-(int)adCount{
+    if (!_adCount) {
+        _adCount = 0;
+    }return _adCount;
+}
+
 -(UIPickerView*)currentPicker{
     _currentPicker = [UIPickerView new];
     return _currentPicker;
@@ -1735,72 +1995,82 @@
 }
 -(HeroButton *)memberA1{
     if (!_memberA1) {
+        [_memberA1 setBanned:NO];
         _memberA1 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40 , btnSize, btnSize)];
-        [_memberA1 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberA1 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberA1 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+      //  [_memberA1 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberA1;
 }
 -(HeroButton *)memberA2{
     if (!_memberA2) {
+                [_memberA2 setBanned:NO];
         _memberA2 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40+btnSize+20 , btnSize, btnSize)];
-        [_memberA2 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberA2 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberA2 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+       // [_memberA2 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberA2;
 }
 -(HeroButton *)memberA3{
     if (!_memberA3) {
+                        [_memberA3 setBanned:NO];
         _memberA3 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40+(btnSize+20)*2 , btnSize, btnSize)];
-        [_memberA3 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
-        [_memberA3 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
+       // [_memberA3 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
+        [_memberA3 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
     } return _memberA3;
 }
 -(HeroButton *)memberA4{
     if (!_memberA4) {
+                        [_memberA4 setBanned:NO];
         _memberA4 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40+(btnSize+20)*3 , btnSize, btnSize)];
-        [_memberA4 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberA4 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberA4 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+       // [_memberA4 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberA4;
 }
 -(HeroButton *)memberA5{
     if (!_memberA5) {
+                        [_memberA5 setBanned:NO];
         _memberA5 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40+(btnSize+20)*4 , btnSize, btnSize)];
-        [_memberA5 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberA5 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberA5 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+        //[_memberA5 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberA5;
 }
 -(HeroButton *)memberB1{
     if (!_memberB1) {
+                        [_memberB1 setBanned:NO];
         _memberB1 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-5-btnSize,40 , btnSize, btnSize)];
-        [_memberB1 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberB1 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberB1 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+      //  [_memberB1 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberB1;
 }
 -(HeroButton *)memberB2{
     if (!_memberB2) {
+                                [_memberB2 setBanned:NO];
         _memberB2 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-5-btnSize,40+btnSize+20 , btnSize, btnSize)];
-        [_memberB2 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberB2 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberB2 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+       // [_memberB2 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberB2;
 }
 -(HeroButton *)memberB3{
     if (!_memberB3) {
+                                [_memberB3 setBanned:NO];
         _memberB3 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-5-btnSize,40+(btnSize+20)*2 , btnSize, btnSize)];
-        [_memberB3 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberB3 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberB3 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+      //  [_memberB3 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberB3;
 }
 -(HeroButton *)memberB4{
     if (!_memberB4) {
+                                [_memberB4 setBanned:NO];
         _memberB4 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-5-btnSize,40+(btnSize+20)*3 , btnSize, btnSize)];
-        [_memberB4 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberB4 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberB4 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+      //  [_memberB4 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberB4;
 }
 -(HeroButton *)memberB5{
     if (!_memberB5) {
+                                [_memberB5 setBanned:NO];
         _memberB5 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-5-btnSize,40+(btnSize+20)*4 , btnSize, btnSize)];
-        [_memberB5 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateNormal];
-        [_memberB5 setBackgroundImage:[UIImage imageNamed:@"placeholder.jpg"] forState:UIControlStateDisabled];
+        [_memberB5 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
+      //  [_memberB5 setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
     } return _memberB5;
 }
 
@@ -1816,21 +2086,24 @@
         [self.view addSubview:banTitleA];
         _Banned1 = [[HeroButton alloc]initWithFrame:CGRectMake(5,60+(btnSize+20)*5  , btnSize-10, btnSize-10)];
         [_Banned1 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned1 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+     //   [_Banned1 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+        [_Banned1 setBanned:YES];
     } return _Banned1;
 }
 -(HeroButton *)Banned2{
     if (!_Banned2) {
         _Banned2 = [[HeroButton alloc]initWithFrame:CGRectMake(5,50+(btnSize+20)*5+btnSize  , btnSize-10, btnSize-10)];
         [_Banned2 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned2 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+    //    [_Banned2 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+                [_Banned2 setBanned:YES];
     } return _Banned2;
 }
 -(HeroButton *)Banned3{
     if (!_Banned3) {
         _Banned3 = [[HeroButton alloc]initWithFrame:CGRectMake(5,40+(btnSize+20)*5+btnSize*2  , btnSize-10, btnSize-10)];
         [_Banned3 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned3 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+       // [_Banned3 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+                [_Banned3 setBanned:YES];
     } return _Banned3;
 }
 -(HeroButton *)Banned4{
@@ -1845,21 +2118,24 @@
         [self.view addSubview:banTitleB];
         _Banned4 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-btnSize+3, 60+(btnSize+20)*5   , btnSize-10, btnSize-10)];
         [_Banned4 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned4 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+      //  [_Banned4 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+                [_Banned4 setBanned:YES];
     } return _Banned4;
 }
 -(HeroButton *)Banned5{
     if (!_Banned5) {
         _Banned5 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-btnSize+3, 50+(btnSize+20)*5+btnSize , btnSize-10, btnSize-10)];
         [_Banned5 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned5 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+       // [_Banned5 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+                [_Banned5 setBanned:YES];
     } return _Banned5;
 }
 -(HeroButton *)Banned6{
     if (!_Banned6) {
         _Banned6 = [[HeroButton alloc]initWithFrame:CGRectMake(screenWidth-btnSize+3, 40+(btnSize+20)*5+btnSize*2 , btnSize-10, btnSize-10)];
         [_Banned6 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-        [_Banned6 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+       // [_Banned6 setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+                [_Banned6 setBanned:YES];
     } return _Banned6;
 }
 
@@ -1879,6 +2155,14 @@
         _searchLaunch.backgroundColor = [UIColor colorWithRed:190/255.0 green:120/255.0 blue:150/255.0 alpha:0.9];
     }return _searchLaunch;
 }
+-(UIButton *)searchCancel{
+    if (!_searchCancel) {
+        _searchCancel = [[UIButton alloc]init];
+        [_searchCancel setTitle:@"取消" forState:UIControlStateNormal];
+        _searchCancel.titleLabel.font = [UIFont systemFontOfSize:12*(screenWidth/360)];
+        _searchCancel.backgroundColor = [UIColor colorWithRed:126/255.0 green:137/255.0 blue:178/255.0 alpha:0.9];
+    }return _searchCancel;
+}
 
 -(NSArray *)allTeam{
     if (!_allTeam) {
@@ -1890,6 +2174,17 @@
         _teamLeft = [NSArray arrayWithObjects:self.memberA1,self.memberA2,self.memberA3,self.memberA4,self.memberA5, nil];
     }return _teamLeft;
 }
+
+-(NSArray *)banPickLeft{
+    if (!_banPickLeft) {
+        _banPickLeft = [NSArray arrayWithObjects:self.memberA1,self.memberA2,self.memberA3,self.memberA4,self.memberA5, self.Banned1,self.Banned2,self.Banned3, nil];
+    }return _banPickLeft;
+}
+-(NSArray *)banPickRight{
+    if (!_banPickRight) {
+        _banPickRight =[NSArray arrayWithObjects:self.memberB1,self.memberB2,self.memberB3,self.memberB4,self.memberB5, self.Banned4,self.Banned5,self.Banned6, nil];
+    }return _banPickRight;
+}
 -(NSArray *)teamRight{
     if (!_teamRight) {
         _teamRight = [NSArray arrayWithObjects:self.memberB1,self.memberB2,self.memberB3,self.memberB4,self.memberB5, nil];
@@ -1899,8 +2194,11 @@
     if (!_currentHeroes) {
         _currentHeroes = [NSMutableArray array];
         for (int i = 0; i<self.heroes.count; i++) {
-            [_currentHeroes addObject:self.heroes[i]];
+           
+                            [_currentHeroes addObject:self.heroes[i]];
+            
         }
+     
         }
     return _currentHeroes;
 }
@@ -1908,7 +2206,9 @@
     _selectedHero = [NSMutableArray arrayWithArray:@[]];
     for (HeroButton*button in self.allTeam) {
         if (button.HeroForButton) {
-            [_selectedHero addObject:button.HeroForButton];
+            @autoreleasepool {
+                            [_selectedHero addObject:button.HeroForButton];
+            }
         }
     }
         return _selectedHero;
@@ -1919,22 +2219,23 @@
     }return _clickedBtn;
 }
 -(NSMutableArray *)heroes{
-    
+    if(!_heroes){
         _heroes = [NSMutableArray array];
         NSString *path = [[NSBundle mainBundle]pathForResource:@"heros.plist" ofType:nil];
         NSArray *arr = [NSArray arrayWithContentsOfFile:path];
         
         for (NSDictionary*dict in arr) {
+            @autoreleasepool {
             HeroModel*temp = [HeroModel heroModelWithDict:dict];
-            [_heroes addObject:temp];
-        }
+                 [_heroes addObject:temp];}
+        }}
     
     return _heroes;
 }
 -(UIPickerView *)HeroPicker{
     if (!_HeroPicker) {
         _HeroPicker = [[UIPickerView alloc]init];
-        
+        [_HeroPicker setShowsSelectionIndicator:YES];
     }return _HeroPicker;
 }
 -(NSString *) keyWord{
@@ -1946,11 +2247,25 @@
     if (!_shortCut) {
         _shortCut = [[UITextField alloc]init];
         _shortCut.backgroundColor = [UIColor whiteColor];
-        
-        _shortCut.adjustsFontSizeToFitWidth = YES;
-        
+       
+        _shortCut.font = [UIFont systemFontOfSize:12*(screenWidth/360)];
+        _shortCut.clearsOnBeginEditing = YES;
     }return _shortCut;
 }
+-(NSString *)shufflePlchd{
+    int i = arc4random()%self.keyWordsArr.count;
+    _shufflePlchd = [NSString stringWithFormat:@"输入\"%@\"试试~", self.keyWordsArr[i]];
+    return _shufflePlchd;
+}
+-(NSString*)getValueFromDict:(NSDictionary*)dict key:(NSString*)key{
+    return [dict objectForKey:key];
+}
+-(NSArray *)keyWordsArr{
+    if (!_keyWordsArr) {
+        _keyWordsArr =[NSArray arrayWithObjects:@"忍者",@"AD",@"击飞",@"沉默",@"压制",@"射手",@"击退",@"奶",@"眩晕",@"束缚",@"恐惧",@"低胜率",@"勾人",@"致盲",@"隐身",@"全球流",@"糊你脸",@"poke",@"德玛西亚",@"疯狗",@"上单",@"收割",@"支援",@"钩子",@"秀你一脸",@"中单",@"上分",@"打野",@"女神",@"约德尔人",@"小学生",@"复活",@"大姨妈",@"基佬",@"刺客", nil];
+    }return _keyWordsArr;
+}
+
 -(NSMutableArray *)guessHeroes{
     if (!_guessHeroes) {
         _guessHeroes = [[NSMutableArray alloc]initWithCapacity:self.heroes.count];
@@ -1963,39 +2278,64 @@
 }
 
 #pragma mark viewDidLoad
+-(void)preLoad{
+    [self heroes];
+    [self currentHeroes];
+    [self guessHeroes];
+
+}
 - (void)viewDidLoad {
+  
+        
     [super viewDidLoad];
-    
+    [self currentHeroes];
+   
+    //    [self.HeroPicker addObserver:self forKeyPath:@"" options:<#(NSKeyValueObservingOptions)#> context:<#(void *)#>]
     CGRect rect = [UIScreen mainScreen].bounds;
-    UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"background2"]];
-    imgView.backgroundColor = [UIColor purpleColor];
-    imgView.frame = CGRectMake(0, 20, rect.size.width, rect.size.height-20);
-    [self.view addSubview:imgView];
+    if(screenHeight<500){
+        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"colorback retina_3.5"]];
+        imgView.backgroundColor = [UIColor purpleColor];
+        imgView.frame = CGRectMake(0, 20, rect.size.width, rect.size.height-20);
+        [self.view addSubview:imgView];
+    }else{
+        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"launch-5.5HD_副本"]];
+        imgView.backgroundColor = [UIColor purpleColor];
+        imgView.frame = CGRectMake(0, 20, rect.size.width, rect.size.height-20);
+        [self.view addSubview:imgView];
+    }
     
-    self.HeroPicker.delegate = self;
-    self.HeroPicker.dataSource = self;
-    self.GuessPicker.delegate = self;
-    self.GuessPicker.dataSource = self;
-    self.shortCut.delegate =self;
+        self.HeroPicker.delegate = self;
+        self.HeroPicker.dataSource = self;
+        self.GuessPicker.delegate = self;
+        self.GuessPicker.dataSource = self;
+        self.shortCut.delegate =self;
+
     self.view.backgroundColor = [UIColor colorWithRed:100/255.0 green:120/255.0 blue:150/255.0 alpha:0.9];
 
-    [self.view addSubview:self.memberA1];
-    [self.view addSubview:self.memberA2];
-    [self.view addSubview:self.memberA3];
-    [self.view addSubview:self.memberA4];
-    [self.view addSubview:self.memberA5];
-    [self.view addSubview:self.memberB1];
-    [self.view addSubview:self.memberB2];
-    [self.view addSubview:self.memberB3];
-    [self.view addSubview:self.memberB4];
-    [self.view addSubview:self.memberB5];
-    [self.view addSubview:self.Banned1];
-    [self.view addSubview:self.Banned2];
-    [self.view addSubview:self.Banned3];
-    [self.view addSubview:self.Banned4];
-    [self.view addSubview:self.Banned5];
-    [self.view addSubview:self.Banned6];
+                [self.view addSubview:self.memberA1];
+                [self.view addSubview:self.memberA2];
+                [self.view addSubview:self.memberA3];
+                [self.view addSubview:self.memberA4];
+                [self.view addSubview:self.memberA5];
+                [self.view addSubview:self.memberB1];
+                [self.view addSubview:self.memberB2];
+                [self.view addSubview:self.memberB3];
+                [self.view addSubview:self.memberB4];
+                [self.view addSubview:self.memberB5];
+                [self.view addSubview:self.Banned1];
+                [self.view addSubview:self.Banned2];
+                [self.view addSubview:self.Banned3];
+                [self.view addSubview:self.Banned4];
+                [self.view addSubview:self.Banned5];
+                [self.view addSubview:self.Banned6];
+                [self.view addSubview:self.clearAButton];
+                [self.view addSubview:self.clearBButton];
+
+
+   
+   
     
+
     
     [self.memberA1 addTarget:self action:@selector(a1clicked) forControlEvents:UIControlEventTouchUpInside];
     [self.memberA2 addTarget:self action:@selector(a2clicked) forControlEvents:UIControlEventTouchUpInside];
@@ -2014,7 +2354,7 @@
     [self.Banned5 addTarget:self action:@selector(ban5Clicked) forControlEvents:UIControlEventTouchUpInside];
     [self.Banned6 addTarget:self action:@selector(ban6Clicked) forControlEvents:UIControlEventTouchUpInside];
    [self.searchLaunch addTarget:self action:@selector(searcherLaunched) forControlEvents:UIControlEventTouchUpInside];
-
+    [self.searchCancel addTarget:self action:@selector(cancelPicker) forControlEvents:UIControlEventTouchUpInside];
 
 
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(keyboardDisappera:) name:UIKeyboardDidHideNotification object:nil];
@@ -2067,108 +2407,130 @@
     [self.ptnB3 addTarget:self action:@selector(ptnB3Clicked) forControlEvents:UIControlEventTouchUpInside];
     [self.ptnB4 addTarget:self action:@selector(ptnB4Clicked) forControlEvents:UIControlEventTouchUpInside];
     [self.ptnB5 addTarget:self action:@selector(ptnB5Clicked) forControlEvents:UIControlEventTouchUpInside];
+//}];
 
-    
+   //[self test2];
+  //  [self testRandom];
+ //   [self test3];
+    //[self test4];
 }
 #pragma mark count点击post通知方法
 -(void)sideButtonA1Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"A1" object:self.countA1 userInfo:@{@"button":self.memberA1  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"A1" object:self.countA1 userInfo:@{@"button":self.memberA1.HeroForButton.countedBy  }];
 }
 -(void)sideButtonA2Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"A2" object:self.countA2 userInfo:@{@"button":self.memberA2  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"A2" object:self.countA2 userInfo:@{@"button":self.memberA2.HeroForButton.countedBy  }];
 }
 -(void)sideButtonA3Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"A3" object:self.countA3 userInfo:@{@"button":self.memberA3  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"A3" object:self.countA3 userInfo:@{@"button":self.memberA3.HeroForButton.countedBy  }];
 }
 -(void)sideButtonA4Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"A4" object:self.countA4 userInfo:@{@"button":self.memberA4  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"A4" object:self.countA4 userInfo:@{@"button":self.memberA4.HeroForButton.countedBy  }];
 }
 -(void)sideButtonA5Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"A5" object:self.countA5 userInfo:@{@"button":self.memberA5  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"A5" object:self.countA5 userInfo:@{@"button":self.memberA5.HeroForButton.countedBy  }];
 }
 -(void)sideButtonB1Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"B1" object:self.countB1 userInfo:@{@"button":self.memberB1  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"B1" object:self.countB1 userInfo:@{@"button":self.memberB1.HeroForButton.countedBy  }];
 }
 -(void)sideButtonB2Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"B2" object:self.countB2 userInfo:@{@"button":self.memberB2  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"B2" object:self.countB2 userInfo:@{@"button":self.memberB2.HeroForButton.countedBy  }];
 }
 -(void)sideButtonB3Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"B3" object:self.countB3 userInfo:@{@"button":self.memberB3  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"B3" object:self.countB3 userInfo:@{@"button":self.memberB3.HeroForButton.countedBy  }];
 }
 -(void)sideButtonB4Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"B4" object:self.countB4 userInfo:@{@"button":self.memberB4  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"B4" object:self.countB4 userInfo:@{@"button":self.memberB4.HeroForButton.countedBy  }];
 }
 -(void)sideButtonB5Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"B5" object:self.countB5 userInfo:@{@"button":self.memberB5  }];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"B5" object:self.countB5 userInfo:@{@"button":self.memberB5.HeroForButton.countedBy  }];
 }
 -(void)ptnA1Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"C1" object:self.ptnA1];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"C1" object:self.ptnA1 userInfo:@{@"button":self.memberA1.HeroForButton.partner  }];
 }
 -(void)ptnA2Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"C2" object:self.ptnA2];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"C2" object:self.ptnA2 userInfo:@{@"button":self.memberA2.HeroForButton.partner  }];
 }
 -(void)ptnA3Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"C3" object:self.ptnA3];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"C3" object:self.ptnA3 userInfo:@{@"button":self.memberA3.HeroForButton.partner  }];
 }
 -(void)ptnA4Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"C4" object:self.ptnA4];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"C4" object:self.ptnA4 userInfo:@{@"button":self.memberA4.HeroForButton.partner  }];
 }
 -(void)ptnA5Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"C5" object:self.ptnA5];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"C5" object:self.ptnA5 userInfo:@{@"button":self.memberA5.HeroForButton.partner  }];
 }
 -(void)ptnB1Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"D1" object:self.ptnB1];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"D1" object:self.ptnB1 userInfo:@{@"button":self.memberB1.HeroForButton.partner  }];
 }
 -(void)ptnB2Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"D2" object:self.ptnB2];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"D2" object:self.ptnB2 userInfo:@{@"button":self.memberB2.HeroForButton.partner  }];
 }
 -(void)ptnB3Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"D3" object:self.ptnB3];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"D3" object:self.ptnB3 userInfo:@{@"button":self.memberB5.HeroForButton.partner  }];
 }
 -(void)ptnB4Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"D4" object:self.ptnB4];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"D4" object:self.ptnB4 userInfo:@{@"button":self.memberB4.HeroForButton.partner }];
 }
 -(void)ptnB5Clicked{
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"D5" object:self.ptnB5];
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"D5" object:self.ptnB5 userInfo:@{@"button":self.memberB5.HeroForButton.partner }];
 }
 
 
 -(void)receiveNotcification:(NSNotification*)info{
     [self.guessHeroes removeAllObjects];
-    SideButton* but = info.object;
-    HeroModel* model = but.button.HeroForButton;
-     NSArray* countArr = model.countedBy;
-     [self.HeroPicker removeFromSuperview];
-    for (NSNumber *number in countArr) {
-     HeroModel*model =  self.heroes[number.longValue];
+    
+//    SideButton* but = info.object;
+//    HeroModel* model = but.button.HeroForButton;
+//NSArray* countArr = model.countedBy;
+    NSArray* tempArr = [info.userInfo objectForKey:@"button"];
+    [self.HeroPicker removeFromSuperview];
+    for (NSNumber *number in tempArr) {
+         @autoreleasepool {
+          
+     HeroModel*model =  self.heroes[number.intValue];
      NSString* nameString = model.name;
      BOOL isContained = 0;
      for (HeroModel*model in self.currentHeroes) {
+         @autoreleasepool {
      if ([model.name isEqualToString:nameString]) {
      isContained = YES;
      break;
-     }else{
-     continue;
      }
+     else
+     {
+     continue;
+            }
+         }
      }
      if (isContained) {
      [self.guessHeroes addObject:self.heroes[number.intValue]];
      }
-     }
+         }
+            }
      //搜索没有内容的适合报警告
      if (self.guessHeroes.count==0) {
      UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"已被选定" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-         [self.shortCut removeFromSuperview];
-         [self.searchLaunch removeFromSuperview];
-     for (UIButton*but in self.allTeam) {
-     but.enabled = YES;
-     }
+//         [self.searchCancel removeFromSuperview];
+//         [self.shortCut removeFromSuperview];
+//         [self.searchLaunch removeFromSuperview];
+//         [self removeCountA];
+//         [self removeCountB];
+//         [self removePtnA];
+//         [self removePtnB];
+ //         [self.GuessPicker removeFromSuperview];
+//     for (UIButton*but in self.allTeam) {
+//          @autoreleasepool {
+//              but.enabled = YES;
+//          }
+//     }
+                     [self.view addSubview:self.HeroPicker];
      [alt show];
-     [self.GuessPicker removeFromSuperview];
+    
      }else{
+         
      [self.GuessPicker reloadAllComponents];
      [self.GuessPicker selectRow:(self.guessHeroes.count-1) inComponent:0 animated:NO];
-
      [self.view addSubview:self.GuessPicker];
      }
 
@@ -2176,6 +2538,19 @@
 
 
 #pragma mark test
+
+-(void)test4{
+    
+    NSArray*arr = self.shortCut.subviews;
+    NSLog(@"%s",__func__);
+   
+        NSLog(@"%lu", (unsigned long)arr.count);
+    
+    
+}
+
+
+
 -(void)setDragBtnTop:(HeroButton*)btn{
     [self.teamcacheA setObject:btn.HeroForButton forKey:@"leftTop"];
     NSLog(@"%@",[[self.teamcacheA objectForKey:@"leftTop"] name]);
@@ -2206,6 +2581,7 @@
         [self.currentHeroes removeObject:self.tempHero];
     }
     for (HeroButton*button in self.allTeam) {
+     @autoreleasepool {
         if (button.HeroForButton) {
             NSString*tempStr = button.HeroForButton.name;
             NSMutableArray *arr = [NSMutableArray array];
@@ -2220,18 +2596,23 @@
                 }
             }
         }
+     }
     }
     BOOL allPicked = YES;
     for (HeroButton* but in self.teamLeft) {
+        @autoreleasepool {
+        if (!but.HeroForButton) {
+            allPicked = NO;
+            break;
+            }
+        }
+    }
+    for (HeroButton* but in self.teamRight) {
+         @autoreleasepool {
         if (!but.HeroForButton) {
             allPicked = NO;
             break;
         }
-    }
-    for (HeroButton* but in self.teamRight) {
-        if (!but.HeroForButton) {
-            allPicked = NO;
-            break;
         }
     }
     
@@ -2246,12 +2627,49 @@
         NSLog(@"HeroNumber--%d--%@",i,[self.heroes[i] name]);
     }
 }
+
+-(void)testRandom{
+    NSMutableArray* arr = [NSMutableArray array];
+    for (int i = 0 ; i<125; i++) {
+        [arr addObject:[NSNumber numberWithInt:i]];
+    }
+    for (int i = 0; i<10; i++) {
+        NSNumber* num = arr[arc4random()%124];
+        [arr removeObject:num];
+        HeroButton*but = self.allTeam[i];
+       but.HeroForButton =self.heroes[num.intValue];
+    }
+     [self.view addSubview:self.modalButton];
+
+}
+-(void)test3{
+    for (HeroModel* model in self.heroes) {
+//        NSDictionary* dict = model.heroProp;
+//        NSNumber* temp = [[NSNumber alloc]init];
+//        NSArray* arr = [dict objectForKey:@"rates"];
+//        for (int i=0; i<7; i++) {
+//            temp = arr[i];
+//            if (temp.intValue>70) {
+//                NSLog(@"%@",arr[i]);
+//            }else{
+//                NSLog(@"wu");
+//            }
+//        }
+        NSLog(@"%@",model.heroTag);
+    }
+}
 -(void)test2{
-    self.guessHeroes  = self.heroes;
-    NSLog(@"%ld",(unsigned long)self.guessHeroes.count);
-      self.GuessPicker.frame =CGRectMake(btnSize, 50-btnSize, 202, 162);
-    [self.view addSubview:self.GuessPicker];
-    
+    self.memberA1.HeroForButton = self.heroes[78];
+    self.memberA2.HeroForButton = self.heroes[121];
+    self.memberA3.HeroForButton = self.heroes[31];
+    self.memberA4.HeroForButton = self.heroes[15];
+    self.memberA5.HeroForButton = self.heroes[17];
+    self.memberB1.HeroForButton = self.heroes[116];
+    self.memberB2.HeroForButton = self.heroes[22];
+    self.memberB3.HeroForButton = self.heroes[76];
+    self.memberB4.HeroForButton = self.heroes[37];
+    self.memberB5.HeroForButton = self.heroes[10];
+    [self.view addSubview:self.modalButton];
 
 }
 

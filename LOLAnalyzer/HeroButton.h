@@ -10,4 +10,5 @@
 #import "HeroModel.h"
 @interface HeroButton : UIButton
 @property (strong, nonatomic)HeroModel *HeroForButton;
+@property (getter=isBanned, nonatomic) BOOL banned;
 @end
