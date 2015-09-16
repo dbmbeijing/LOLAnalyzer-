@@ -19,7 +19,7 @@
 #import "HeroPickerView.h"
 #import "detailView.h"
 #import "SideButton.h"
-#import "ConfigHeader.h"
+
 #import <iAd/iAd.h>
 @class ConlusionView;
 @protocol ChangePositionDelegate <NSObject>

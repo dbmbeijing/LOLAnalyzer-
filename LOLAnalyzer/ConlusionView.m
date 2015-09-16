@@ -1439,7 +1439,7 @@ point+= 30;
     [self addSubview:self.reCalc];
   //  [self addSubview:self.destroyButton];
 
-    [self.delegate YouMiAdTest];
+
 
     
     

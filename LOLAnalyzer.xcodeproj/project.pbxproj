@@ -14,16 +14,6 @@
 		280F2C411B94E1AB000A4A38 /* what's on Version 1.3 in Resources */ = {isa = PBXBuildFile; fileRef = 280F2C401B94E1AB000A4A38 /* what's on Version 1.3 */; };
 		281F88801B758EED003846CF /* ConlusionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 281F887F1B758EED003846CF /* ConlusionView.m */; };
 		281F88871B783509003846CF /* PositionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 281F88861B783509003846CF /* PositionView.m */; };
-		282DD9F11B8960C300C9C795 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9F01B8960C300C9C795 /* StoreKit.framework */; };
-		282DD9F31B8960D300C9C795 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9F21B8960D300C9C795 /* Security.framework */; };
-		282DD9F51B8960DF00C9C795 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9F41B8960DF00C9C795 /* CFNetwork.framework */; };
-		282DD9F71B8960F600C9C795 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9F61B8960F600C9C795 /* SystemConfiguration.framework */; };
-		282DD9F91B89610100C9C795 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9F81B89610100C9C795 /* ImageIO.framework */; };
-		282DD9FB1B89610C00C9C795 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9FA1B89610C00C9C795 /* CoreMotion.framework */; };
-		282DD9FD1B89611B00C9C795 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9FC1B89611B00C9C795 /* libz.dylib */; };
-		282DD9FF1B89612D00C9C795 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DD9FE1B89612D00C9C795 /* libsqlite3.dylib */; };
-		282DDA051B896A5300C9C795 /* sdk_v2.13_2015-07-23.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DDA041B896A5300C9C795 /* sdk_v2.13_2015-07-23.a */; };
-		282DDA061B896A5300C9C795 /* sdk_v2.13_2015-07-23.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DDA041B896A5300C9C795 /* sdk_v2.13_2015-07-23.a */; };
 		282DDA0B1B897AD000C9C795 /* FIR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DDA0A1B897AD000C9C795 /* FIR.framework */; };
 		282DDA0C1B897AD000C9C795 /* FIR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 282DDA0A1B897AD000C9C795 /* FIR.framework */; };
 		282DDA101B899D1B00C9C795 /* HeroPickerXib_6plus.xib in Resources */ = {isa = PBXBuildFile; fileRef = 282DDA0F1B899D1B00C9C795 /* HeroPickerXib_6plus.xib */; };
@@ -44,6 +34,7 @@
 		28D1F5D61B6E0E4A00B2B423 /* HeroPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D1F5D51B6E0E4A00B2B423 /* HeroPickerView.m */; };
 		28D1F5D81B6E116400B2B423 /* HeroPickerXib.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28D1F5D71B6E116400B2B423 /* HeroPickerXib.xib */; };
 		28E9BA401B6F7F970029CB16 /* HeroButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 28E9BA3F1B6F7F970029CB16 /* HeroButton.m */; };
+		28EDD8081BA7AC1000E7D45B /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28EDD8071BA7AC1000E7D45B /* SystemConfiguration.framework */; };
 		28F28DB51B70A5E700431179 /* Searcher.plist in Resources */ = {isa = PBXBuildFile; fileRef = 28F28DB41B70A5E700431179 /* Searcher.plist */; };
 		28F28DBD1B74CDFE00431179 /* ConclusionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28F28DBB1B74CDFE00431179 /* ConclusionViewController.xib */; };
 /* End PBXBuildFile section */
@@ -70,17 +61,6 @@
 		281F887F1B758EED003846CF /* ConlusionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConlusionView.m; sourceTree = "<group>"; };
 		281F88851B783509003846CF /* PositionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PositionView.h; sourceTree = "<group>"; };
 		281F88861B783509003846CF /* PositionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PositionView.m; sourceTree = "<group>"; };
-		282DD9F01B8960C300C9C795 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		282DD9F21B8960D300C9C795 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		282DD9F41B8960DF00C9C795 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		282DD9F61B8960F600C9C795 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		282DD9F81B89610100C9C795 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		282DD9FA1B89610C00C9C795 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
-		282DD9FC1B89611B00C9C795 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		282DD9FE1B89612D00C9C795 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
-		282DDA021B89642E00C9C795 /* ConfigHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConfigHeader.h; sourceTree = "<group>"; };
-		282DDA031B89642E00C9C795 /* NewWorldSpt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NewWorldSpt.h; sourceTree = "<group>"; };
-		282DDA041B896A5300C9C795 /* sdk_v2.13_2015-07-23.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "sdk_v2.13_2015-07-23.a"; sourceTree = "<group>"; };
 		282DDA0A1B897AD000C9C795 /* FIR.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FIR.framework; sourceTree = "<group>"; };
 		282DDA0F1B899D1B00C9C795 /* HeroPickerXib_6plus.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HeroPickerXib_6plus.xib; sourceTree = "<group>"; };
 		288153551B8B5B6500792AF6 /* heros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = heros.plist; sourceTree = "<group>"; };
@@ -108,6 +88,7 @@
 		28D1F6121B6F66D300B2B423 /* UIButton_UIButton_HeroModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIButton_UIButton_HeroModel.h; sourceTree = "<group>"; };
 		28E9BA3E1B6F7F970029CB16 /* HeroButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeroButton.h; sourceTree = "<group>"; };
 		28E9BA3F1B6F7F970029CB16 /* HeroButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeroButton.m; sourceTree = "<group>"; };
+		28EDD8071BA7AC1000E7D45B /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		28F28DB41B70A5E700431179 /* Searcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Searcher.plist; sourceTree = "<group>"; };
 		28F28DBB1B74CDFE00431179 /* ConclusionViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConclusionViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -117,16 +98,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				282DD9FF1B89612D00C9C795 /* libsqlite3.dylib in Frameworks */,
-				282DD9FD1B89611B00C9C795 /* libz.dylib in Frameworks */,
-				282DD9FB1B89610C00C9C795 /* CoreMotion.framework in Frameworks */,
-				282DD9F91B89610100C9C795 /* ImageIO.framework in Frameworks */,
+				28EDD8081BA7AC1000E7D45B /* SystemConfiguration.framework in Frameworks */,
 				282DDA0B1B897AD000C9C795 /* FIR.framework in Frameworks */,
-				282DD9F71B8960F600C9C795 /* SystemConfiguration.framework in Frameworks */,
-				282DDA051B896A5300C9C795 /* sdk_v2.13_2015-07-23.a in Frameworks */,
-				282DD9F51B8960DF00C9C795 /* CFNetwork.framework in Frameworks */,
-				282DD9F31B8960D300C9C795 /* Security.framework in Frameworks */,
-				282DD9F11B8960C300C9C795 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,7 +108,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				282DDA0C1B897AD000C9C795 /* FIR.framework in Frameworks */,
-				282DDA061B896A5300C9C795 /* sdk_v2.13_2015-07-23.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,18 +117,11 @@
 		28D1F5981B6DE82600B2B423 = {
 			isa = PBXGroup;
 			children = (
-				282DD9FE1B89612D00C9C795 /* libsqlite3.dylib */,
-				282DD9FC1B89611B00C9C795 /* libz.dylib */,
+				28EDD8071BA7AC1000E7D45B /* SystemConfiguration.framework */,
 				280F2C401B94E1AB000A4A38 /* what's on Version 1.3 */,
 				280F2C3C1B94E107000A4A38 /* Log */,
 				280F2C3E1B94E184000A4A38 /* Bugs */,
 				282DDA0A1B897AD000C9C795 /* FIR.framework */,
-				282DD9FA1B89610C00C9C795 /* CoreMotion.framework */,
-				282DD9F81B89610100C9C795 /* ImageIO.framework */,
-				282DD9F61B8960F600C9C795 /* SystemConfiguration.framework */,
-				282DD9F41B8960DF00C9C795 /* CFNetwork.framework */,
-				282DD9F21B8960D300C9C795 /* Security.framework */,
-				282DD9F01B8960C300C9C795 /* StoreKit.framework */,
 				28D1F5A31B6DE82600B2B423 /* LOLAnalyzer */,
 				28D1F5BD1B6DE82600B2B423 /* LOLAnalyzerTests */,
 				28D1F5A21B6DE82600B2B423 /* Products */,
@@ -175,9 +140,6 @@
 		28D1F5A31B6DE82600B2B423 /* LOLAnalyzer */ = {
 			isa = PBXGroup;
 			children = (
-				282DDA041B896A5300C9C795 /* sdk_v2.13_2015-07-23.a */,
-				282DDA021B89642E00C9C795 /* ConfigHeader.h */,
-				282DDA031B89642E00C9C795 /* NewWorldSpt.h */,
 				28D1F5A81B6DE82600B2B423 /* AppDelegate.h */,
 				28D1F5A91B6DE82600B2B423 /* AppDelegate.m */,
 				28D1F5AB1B6DE82600B2B423 /* ViewController.h */,

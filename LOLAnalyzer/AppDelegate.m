@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "ConfigHeader.h"
+
 #import <FIR/FIR.h>
 @interface AppDelegate ()
 
@@ -19,14 +19,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     //请把你从官网申请的appid和secretkey替换到这里再测试。
     //否则会提示错误
-    NSString *appid = @"5cc3df8fea89facb";
-    NSString *secretId = @"b2681a68ba17d23b";
-    [NewWorldSpt initQQWDeveloperParams:appid QQ_SecretId:secretId];
-    //可选方法,默认不写这个方法（本方法为了解决广告界面的点击失效问题）
-    [NewWorldSpt setWindow:[UIApplication sharedApplication].delegate.window];
-    //使用前先初始化一下插屏
-    [NewWorldSpt initQQWDeveLoper:kTypePortrait];//填上你对应的横竖屏模式
-    // Override point for customization after application launch.
+
     NSString*hdBug = @"1ab3202fa0c39ebb738d95777398e6dd";
     [FIR handleCrashWithKey:hdBug];
     return YES;

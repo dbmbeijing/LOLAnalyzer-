@@ -12,7 +12,7 @@
 #import "HeroButton.h"
 //#import "ConclusionViewController.h"
 #import "SideButton.h"
-#import "ConfigHeader.h"
+
 #import <objc/runtime.h>
 
 #define btnSize [UIScreen mainScreen].bounds.size.height*0.09
@@ -132,21 +132,21 @@
 
 @implementation ViewController
 #pragma mark 代理方法
--(void)YouMiAdTest{
-    if (!((self.adCount+1)%3-1)) {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [NewWorldSpt showQQWSPTAction:^(BOOL flag){
-            if (flag) {
-               
-            }
-            else{
-                
-            }
-        }];
-    });
-    }
-      self.adCount++;
-}
+//-(void)YouMiAdTest{
+//    if (!((self.adCount+1)%3-1)) {
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        [NewWorldSpt showQQWSPTAction:^(BOOL flag){
+//            if (flag) {
+//               
+//            }
+//            else{
+//                
+//            }
+//        }];
+//    });
+//    }
+//      self.adCount++;
+//}
 
 
 -(void)destroy{
@@ -2293,12 +2293,12 @@
     //    [self.HeroPicker addObserver:self forKeyPath:@"" options:<#(NSKeyValueObservingOptions)#> context:<#(void *)#>]
     CGRect rect = [UIScreen mainScreen].bounds;
     if(screenHeight<500){
-        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"colorback retina_3.5"]];
+        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"ViFor4s"]];
         imgView.backgroundColor = [UIColor purpleColor];
         imgView.frame = CGRectMake(0, 20, rect.size.width, rect.size.height-20);
         [self.view addSubview:imgView];
     }else{
-        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"launch-5.5HD_副本"]];
+        UIImageView*imgView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"launchImgVi_5.5"]];
         imgView.backgroundColor = [UIColor purpleColor];
         imgView.frame = CGRectMake(0, 20, rect.size.width, rect.size.height-20);
         [self.view addSubview:imgView];
