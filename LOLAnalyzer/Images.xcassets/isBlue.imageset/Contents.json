@@ -2,18 +2,18 @@
   "images" : [
     {
       "idiom" : "universal",
-      "scale" : "1x",
-      "filename" : "isBlue.JPG"
+      "filename" : "isBlue-1.png",
+      "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "scale" : "2x",
-      "filename" : "isBlue-1.JPG"
+      "filename" : "isBlue-2.png",
+      "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "scale" : "3x",
-      "filename" : "isBlue-2.JPG"
+      "filename" : "isBlue.png",
+      "scale" : "3x"
     }
   ],
   "info" : {
