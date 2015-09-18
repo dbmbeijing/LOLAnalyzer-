@@ -10,9 +10,7 @@
 
 @implementation PositionView
 
-//-(void)setButtonForPosition:(HeroButton *)ButtonForPosition{
-//    _ButtonForPosition = ButtonForPosition;
-//}
+
 
 
 @end

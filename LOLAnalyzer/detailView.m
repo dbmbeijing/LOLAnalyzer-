@@ -16,29 +16,6 @@
     
       self.frame = CGRectMake(0, screenRect.size.height*0.6, screenRect.size.width, screenRect.size.height*0.4);
     self.backgroundColor = [UIColor blueColor];
-//    [self addSubview:self.leftTopM];
-//    [self addSubview:self.leftJunM];
-//    [self addSubview:self.leftMidM];
-//    [self addSubview:self.leftAdM];
-//    [self addSubview:self.leftSupM];
-//    [self addSubview:self.rightTopM];
-//    [self addSubview:self.rightJunM];
-//    [self addSubview:self.rightMidM];
-//    [self addSubview:self.rightAdM];
-//    [self addSubview:self.rightSupM];
-//    [self addSubview:self.leftTopScore];
-//    [self addSubview:self.leftJunScore];
-//    [self addSubview:self.leftMidScore];
-//    [self addSubview:self.leftAdScore];
-//    [self addSubview:self.leftSupScore];
-//    [self addSubview:self.rightTopScore];
-//    [self addSubview:self.rightJunScore];
-//    [self addSubview:self.rightMidScore];
-//    [self addSubview:self.rightAdScore];
-//    [self addSubview:self.rightSupScore];
-//    [self addSubview:self.laningDetailBut];
-//    [self addSubview:self.teamFightDetailBut];
-//    [self addSubview:self.soloPushDetailBut];
 
 
     

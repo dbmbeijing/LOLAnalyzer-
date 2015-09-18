@@ -28,3 +28,8 @@ HeroModel*model =  self.heroes[number.longValue];
 原因即在不同精度小数进行了比较
 所以需要取得相同精度
 取二位小数办法:    CGFloat finalBrz =floor(temp*100)/100;
+
+未解决:webview下的按钮无法调整大小
+picker滚动时, 英雄头像并非与picker同步变化
+
+

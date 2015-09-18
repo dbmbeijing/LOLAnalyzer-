@@ -5,13 +5,7 @@
 //  Created by soppysonny on 15/8/8.
 //  Copyright (c) 2015年 soppysonny. All rights reserved.
 ///
-/*
- 1242x2208.
- 1536x2048.
- 768x1024.
 
-
- */
 #import <UIKit/UIKit.h>
 #import "HeroButton.h"
 #import "PositionView.h"
@@ -19,20 +13,22 @@
 #import "HeroPickerView.h"
 #import "detailView.h"
 #import "SideButton.h"
-
 #import <iAd/iAd.h>
 @class ConlusionView;
 @protocol ChangePositionDelegate <NSObject>
 
 @optional
+//调整位置(拖拽方法)
 -(void)changePositionLeft:(HeroModel*)hero :(NSString*)key;
 -(void)changePositionRight:(HeroModel*)hero :(NSString*)key;
+//加载已选英雄
 -(void)addAllTeam;
+//清除所选
 -(void)clearLeft;
 -(void)clearRight;
+//清除调整位置的view
 -(void)destroy;
--(void)removeAndLoad;
--(void)YouMiAdTest;
+
 @end
 
 

@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 #import "HeroModel.h"
 @interface heroScore : NSObject
-
+//英雄属性,参照plist文件
 @property (strong, nonatomic) NSNumber* damage;
 @property (strong, nonatomic) NSNumber* control;
 @property (strong, nonatomic) NSNumber* AOE;
@@ -21,7 +21,6 @@
 @property (getter = isMakeRelife, nonatomic) BOOL makeRelife;
 @property (strong, nonatomic) NSNumber* shield;
 @property (strong, nonatomic) NSNumber* makeShielded;
-//@property (getter = isMakeFly, nonatomic) BOOL MakeFly;
 @property (getter = isGlobal, nonatomic) BOOL global;
 @property (strong, nonatomic) NSNumber* resistance;
 @property (strong, nonatomic) NSNumber* teamResistance;

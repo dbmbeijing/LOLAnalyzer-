@@ -8,30 +8,33 @@
 #import "ViewController.h"
 #import "HeroModel.h"
 #import "HeroPickerView.h"
-//#import "UIButton_UIButton_HeroModel.h"//有问题
 #import "HeroButton.h"
-//#import "ConclusionViewController.h"
 #import "SideButton.h"
-
 #import <objc/runtime.h>
-
+//按钮尺寸由屏幕高度决定
 #define btnSize [UIScreen mainScreen].bounds.size.height*0.09
+//屏幕宽高宏
 #define screenWidth [UIScreen mainScreen].bounds.size.width
 #define screenHeight [UIScreen mainScreen].bounds.size.height
+//搜索框处约束
 #define txtpicGap 160
 #define textSize btnSize*2.3
-#define pickerWidth self.HeroPicker.frame.size.width*0.8
 #define MAX_SHORTCUT_Y CGRectGetMaxY(_shortCut.frame)
 #define MIN_SHORTCUT_X CGRectGetMinX(_shortCut.frame)
+//pickerview尺寸
+#define pickerWidth self.HeroPicker.frame.size.width*0.8
+
 
 @interface ViewController ()<UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate,UISearchBarDelegate,UIAlertViewDelegate>
-
+//选择全部英雄的pickerview, 同时guesspicker隐藏
 @property (strong, nonatomic)UIPickerView *HeroPicker;
+//搜索英雄时弹出的pickerview, 同时heropicker隐藏
 @property (strong, nonatomic)UIPickerView *GuessPicker;
-
+//全部英雄的数组, 不作修改
 @property (strong, nonatomic)NSMutableArray *heroes;
+//剔除已被选择的英雄,剩下的英雄
 @property (strong, nonatomic)NSMutableArray *currentHeroes;
-
+//点击方框选择英雄,同时加载coverA1~coverB5
 @property (strong, nonatomic)HeroButton* memberA1;
 @property (strong, nonatomic)HeroButton* memberA2;
 @property (strong, nonatomic)HeroButton* memberA3;
@@ -43,7 +46,7 @@
 @property (strong, nonatomic)HeroButton* memberB3;
 @property (strong, nonatomic)HeroButton* memberB4;
 @property (strong, nonatomic)HeroButton* memberB5;
-
+//coverA1~coverB5,随picker滚动改变背景图(运行时对象关联)
 @property (strong, nonatomic)UIImageView* coverA1;
 @property (strong, nonatomic)UIImageView* coverA2;
 @property (strong, nonatomic)UIImageView* coverA3;
@@ -55,50 +58,53 @@
 @property (strong, nonatomic)UIImageView* coverB3;
 @property (strong, nonatomic)UIImageView* coverB4;
 @property (strong, nonatomic)UIImageView* coverB5;
-
+//被ban英雄, 没有加入头像变化效果
 @property (strong, nonatomic)HeroButton* Banned1;
 @property (strong, nonatomic)HeroButton* Banned2;
 @property (strong, nonatomic)HeroButton* Banned3;
 @property (strong, nonatomic)HeroButton* Banned4;
 @property (strong, nonatomic)HeroButton* Banned5;
 @property (strong, nonatomic)HeroButton* Banned6;
-
+//搜索框
 @property (strong, nonatomic)UITextField* shortCut;
+//搜索框的默认placeholder文本(随机关键字)
 @property (copy, nonatomic)NSString *shufflePlchd;
+//关键字数组
 @property (strong, nonatomic)NSArray* keyWordsArr;
-
+//搜索/取消按钮
 @property (strong, nonatomic)UIButton* searchLaunch;
 @property (strong, nonatomic)UIButton* searchCancel;
 
-@property (strong, nonatomic)UIButton* lockButton;
+//上个按钮所选英雄
 @property (strong, nonatomic)HeroModel* tempHero;
+//当前显示的pickerview
 @property (strong, nonatomic)UIPickerView* currentPicker;
-
+//文本框所输入的关键字
 @property (copy, nonatomic)  NSString* keyWord;
+//搜索用字典(searcher.plist)
 @property (strong, nonatomic)NSDictionary* searcherDict;
+//符合搜索条件的英雄数组
 @property (strong, nonatomic)NSMutableArray* guessHeroes;
-
+//存储已被点击的按钮,目的是使按钮得到picker选择得到的英雄模型,其实可以使用对象关联,在
 @property (strong, nonatomic)NSMutableArray* clickedBtn;
 @property (strong, nonatomic)NSMutableArray* selectedHero;//被Ban被选英雄都加到这个数组,容量16
-
+//所有按钮
 @property (strong, nonatomic)NSArray* allTeam;
 @property (strong, nonatomic)NSArray* teamLeft;
 @property (strong, nonatomic)NSArray* teamRight;
 @property (strong, nonatomic)NSArray* banPickLeft;
 @property (strong, nonatomic)NSArray* banPickRight;
-
-@property (strong, nonatomic)NSArray* banLeft;
-@property (strong, nonatomic)NSArray* banRight;
-
+//全部选择完成后加载modalButton
 @property (strong, nonatomic)UIButton* modalButton;
-
+//储存已选英雄队伍,用于下个页面
 @property (copy, nonatomic)NSMutableDictionary* teamcacheA;
 @property (copy, nonatomic)NSMutableDictionary* teamcacheB;
-
+//第二个页面(毛玻璃效果)
 @property (strong, nonatomic)ConlusionView* coverView;
 //点击左列按钮右侧count按钮(if 对应herobutton.heromodel存在)全部add,
 //点击count按钮,heroview移除,添加guessview,读取count按钮同一行的herobutton.heroforbutton.countedBy
 //以此数组读取复数的英雄,遍历监测是否已经被选,剔除后添加到guessheroes数组,详情参照searcherlaunched方法
+//克制与配合按钮
 @property (strong, nonatomic)SideButton *countB1;
 @property (strong, nonatomic)SideButton *countB2;
 @property (strong, nonatomic)SideButton *countB3;
@@ -122,7 +128,7 @@
 @property (strong, nonatomic)SideButton *ptnA3;
 @property (strong, nonatomic)SideButton *ptnA4;
 @property (strong, nonatomic)SideButton *ptnA5;
-
+//清除按钮
 @property (strong, nonatomic)UIButton *clearAButton;
 @property (strong, nonatomic)UIButton *clearBButton;
 
@@ -132,37 +138,18 @@
 
 @implementation ViewController
 #pragma mark 代理方法
-//-(void)YouMiAdTest{
-//    if (!((self.adCount+1)%3-1)) {
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        [NewWorldSpt showQQWSPTAction:^(BOOL flag){
-//            if (flag) {
-//               
-//            }
-//            else{
-//                
-//            }
-//        }];
-//    });
-//    }
-//      self.adCount++;
-//}
-
-
 -(void)destroy{
     if (_coverView) {
         _coverView  = nil;
     }
 }
 
-
 -(void)changePositionRight:(HeroModel *)hero :(NSString *)key{
     [self.teamcacheB setObject:hero forKey:key];
-    
 }
+
 -(void)changePositionLeft:(HeroModel *)hero :(NSString *)key{
     [self.teamcacheA setObject:hero forKey:key];
-
 }
 
 
@@ -179,7 +166,7 @@
     self.memberB3.HeroForButton = [self.teamcacheB objectForKey:@"rightMid"];
     self.memberB4.HeroForButton = [self.teamcacheB objectForKey:@"rightAd"];
     self.memberB5.HeroForButton = [self.teamcacheB objectForKey:@"rightSup"];
-//    
+   
     for (HeroButton*button in self.allTeam) {
         @autoreleasepool {
                     [self.view addSubview:button];
@@ -188,9 +175,6 @@
 }
 
 #pragma mark 按钮懒加载
-
-
-
 -(UIButton *)clearAButton{
     if (!_clearAButton) {
         _clearAButton = [[UIButton alloc]initWithFrame:CGRectMake(self.Banned1.frame.origin.x+1.1*btnSize, screenHeight-btnSize, btnSize*1.6, btnSize*0.75)];
@@ -549,7 +533,7 @@
         [self.view addSubview:self.modalButton];
     }
 }
-
+//清除全部队伍方法
 -(void)clearAll{
     for (HeroButton*button in self.allTeam) {
         @autoreleasepool {
@@ -558,11 +542,11 @@
             }
             button.HeroForButton = nil;
             [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
-//            [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
-//            [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
+
         }
     }
-}//清除全部队伍方法
+}
+
 -(void)clearLeft{
     for (HeroButton*button in self.banPickLeft) {
         //检测是否存在model,并加入可选数组currentheroes中
@@ -574,11 +558,10 @@
             //.HeroForButton方法中添加了检测model是否存在的判断,否则会报invalid
             if (button.isBanned){
                 [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-//                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+
             }else{
                 [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
-//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
-//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
+
             }
         }
     }
@@ -595,15 +578,15 @@
                 [self.currentHeroes addObject:button.HeroForButton];
             }
             button.HeroForButton = nil;
-            //.HeroForButton方法中添加了检测model是否存在的判断,否则会报invalid
+
             if (button.isBanned){
                 [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateNormal];
-//                [button setBackgroundImage:[UIImage imageNamed:@"forbiddenMark"] forState:UIControlStateDisabled];
+
             }else{
                 
                 [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateNormal];
-//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateDisabled];
-//                [button setBackgroundImage:[UIImage imageNamed:@"placeholder.png"] forState:UIControlStateHighlighted];
+
+
             }
 
         }
@@ -652,12 +635,10 @@
             
             UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"已被选定" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             
-//            for (UIButton*but in self.allTeam) { @autoreleasepool {
-//                but.enabled = YES;}
-//            }
+
             [alt show];
             [self.view addSubview:self.HeroPicker];
-//            [self.GuessPicker removeFromSuperview];
+
         }else{
             
             [self.GuessPicker reloadAllComponents];
@@ -668,15 +649,13 @@
         
     }else {
         UIAlertView* alt = [[UIAlertView alloc]initWithTitle:nil message:@"无符合关键字英雄" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        
-//        for (UIButton*but in self.allTeam) { @autoreleasepool {
-//            but.enabled = YES;}
-//        }
+
         [alt show];
         
     }
     
 }
+//"PLAY"按钮的点击方法:加载毛玻璃view
 -(void)modalButtonClicked{
     HeroModel* leftTop = [[HeroModel alloc]init];
     HeroModel* leftJun = [[HeroModel alloc]init];
@@ -689,6 +668,7 @@
     HeroModel* rightMid = [[HeroModel alloc]init];
     HeroModel* rightAd = [[HeroModel alloc]init];
     HeroModel* rightSup = [[HeroModel alloc]init];
+//根据英雄的优先级, 分配英雄所属位置
     NSMutableArray *compareA =[NSMutableArray arrayWithObjects:self.memberA1,self.memberA2,self.memberA3,self.memberA4,self.memberA5, nil];
     
     int iMid = 0;
@@ -855,19 +835,14 @@
     self.coverView.memberB3.HeroForButton = [self.teamcacheB objectForKey:@"rightMid"];
     self.coverView.memberB4.HeroForButton = [self.teamcacheB objectForKey:@"rightAd"];
     self.coverView.memberB5.HeroForButton = [self.teamcacheB objectForKey:@"rightSup"];
-    
+    //加载effectiveview
     [self.view addSubview:self.coverView];
     [UIVisualEffectView animateWithDuration:1.0 animations:^{
         self.coverView.transform = CGAffineTransformMakeTranslation(0, -screenHeight);
     }];
 
-
-//    for (HeroButton* button in self.allTeam) {
-//        [button removeFromSuperview];
-//        //        button.HeroForButton  = nil;
-//        
-//    }
 }
+//添加/移除克制&配合按钮
 -(void)addCountB{
     if ([self.teamRight[0] HeroForButton]) {
         [self.view addSubview:self.countB1];
@@ -1006,7 +981,9 @@
         [self.ptnB5 removeFromSuperview];
     }
 }
+//英雄头像按钮点击方法
 -(void)a1clicked{
+    //关联按钮与和picker同步滚动的imageView
     objc_setAssociatedObject(self.memberA1, @"cover", self.coverA1, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     [self.view addSubview:self.coverA1];
     [self.modalButton removeFromSuperview];
@@ -1017,6 +994,7 @@
     [self removePtnB];
     [self.clearAButton setEnabled:NO];
     [self.clearBButton setEnabled:NO];
+    //如果当前按钮已选择过,则把该英雄加回currentheroes数组
     if(self.memberA1.HeroForButton)
     {
         NSString *nameString = self.memberA1.HeroForButton.name;
@@ -1035,14 +1013,14 @@
             [self.currentHeroes addObject:self.memberA1.HeroForButton];}
 
     }
-    
+    //使其他按钮不可点击,如果可以点击,会出现可以重复选择同一英雄的情况
     for (HeroButton *but in self.allTeam) {
         @autoreleasepool {
         [but setEnabled:NO];
         }
         }
             self.shortCut.placeholder = self.shufflePlchd;
-   
+   //设置搜索框frame(冗余,重复多次,待优化)
     self.shortCut.frame = CGRectMake(10+btnSize, 50-btnSize+txtpicGap, textSize, btnSize);
     self.searchLaunch.frame = CGRectMake(13+btnSize+textSize, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
     self.searchCancel.frame = CGRectMake(13+btnSize+textSize+btnSize*0.6+3, 50-btnSize+txtpicGap, btnSize*0.6, btnSize);
@@ -1776,6 +1754,7 @@
     [self.HeroPicker selectRow:(self.currentHeroes.count-1) inComponent:0 animated:NO];
     
 }
+//设置搜索框样式
 -(void)textFieldDidBeginEditing:(UITextField *)textField{
     NSArray*temp = [NSArray arrayWithArray:self.shortCut.subviews];
    
@@ -1794,7 +1773,7 @@
         [but setEnabled:YES];
          }
     }
-    
+    //选定picker后,移除搜索框等,改变对应的按钮的英雄模型
     HeroButton*tempBtn  = self.clickedBtn.lastObject;
    
     if(pickerView == self.HeroPicker ){
@@ -1817,6 +1796,7 @@
             [self.searchCancel removeFromSuperview];
         
     }
+    
            UIImageView*temp = objc_getAssociatedObject(tempBtn, @"cover");
     [temp removeFromSuperview];
     [self.clearAButton setEnabled:YES];
@@ -2555,72 +2535,7 @@
     [self.teamcacheA setObject:btn.HeroForButton forKey:@"leftTop"];
     NSLog(@"%@",[[self.teamcacheA objectForKey:@"leftTop"] name]);
 }
--(UIButton *)lockButton{
-    if (!_lockButton) {
-        _lockButton = [[UIButton alloc]init];
-        [_lockButton setTitle:@"点击选定" forState:UIControlStateNormal];
-        [_lockButton setTitle:@"点击选定" forState:UIControlStateNormal];
-        _lockButton.titleLabel.font = [UIFont systemFontOfSize:12*(screenWidth/360)];
-        _lockButton.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
-    }return _lockButton;
-}
--(void)lockButtonClicked{
-    HeroButton*tempBtn = self.clickedBtn.lastObject;
-    if (self.currentPicker == self.HeroPicker) {
-        [self.HeroPicker removeFromSuperview];
-        [self.shortCut removeFromSuperview];
-        [self.searchLaunch removeFromSuperview];
-        [self.lockButton removeFromSuperview];
-        tempBtn.HeroForButton  = self.tempHero;
-    }else{
-        [self.GuessPicker removeFromSuperview];
-        [self.shortCut removeFromSuperview];
-        [self.searchLaunch removeFromSuperview];
-        [self.lockButton removeFromSuperview];
-        tempBtn.HeroForButton = self.tempHero;
-        [self.currentHeroes removeObject:self.tempHero];
-    }
-    for (HeroButton*button in self.allTeam) {
-     @autoreleasepool {
-        if (button.HeroForButton) {
-            NSString*tempStr = button.HeroForButton.name;
-            NSMutableArray *arr = [NSMutableArray array];
-            for (int i = 0; i<self.currentHeroes.count; i++) {
-                [arr addObject:self.currentHeroes[i]];
-            }
-            
-            for (HeroModel*model in arr) {
-                if ([model.name isEqualToString:tempStr]) {
-                    [self.currentHeroes removeObject:model];
-                    //[self.HeroPicker reloadAllComponents];
-                }
-            }
-        }
-     }
-    }
-    BOOL allPicked = YES;
-    for (HeroButton* but in self.teamLeft) {
-        @autoreleasepool {
-        if (!but.HeroForButton) {
-            allPicked = NO;
-            break;
-            }
-        }
-    }
-    for (HeroButton* but in self.teamRight) {
-         @autoreleasepool {
-        if (!but.HeroForButton) {
-            allPicked = NO;
-            break;
-        }
-        }
-    }
-    
-    if (allPicked) {
-        [self.view addSubview:self.modalButton];
-    }
-    
-}
+
 //test第二个界面启用该方法省去输入过程
 -(void)logheroes{
     for (int i = 0; i<self.heroes.count; i++) {

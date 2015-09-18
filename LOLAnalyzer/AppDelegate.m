@@ -17,9 +17,7 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    //请把你从官网申请的appid和secretkey替换到这里再测试。
-    //否则会提示错误
-
+//HDBUG植入
     NSString*hdBug = @"1ab3202fa0c39ebb738d95777398e6dd";
     [FIR handleCrashWithKey:hdBug];
     return YES;

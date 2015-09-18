@@ -6,7 +6,7 @@
 //  Copyright (c) 2015年 soppysonny. All rights reserved.
 
 
-//damage和AOE的计入系数需要调整
+
 
 
 #import "ConlusionView.h"
